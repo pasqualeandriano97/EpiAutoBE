@@ -21,6 +21,7 @@ public class Vehicle {
     private String model;
     private String type;
     private int year;
+    private String imageUrl;
 
     public Vehicle(String plate, String fuelType, String brand, String model, String type, int year) {
         this.plate = plate;

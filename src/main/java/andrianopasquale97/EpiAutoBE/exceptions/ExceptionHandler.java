@@ -1,5 +1,6 @@
 package andrianopasquale97.EpiAutoBE.exceptions;
 
+import andrianopasquale97.EpiAutoBE.payloads.ErrorsResponseDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -45,11 +46,6 @@ public class ExceptionHandler {
         return new ErrorsResponseDTO("Problema lato server!!", LocalDateTime.now());
     }
 
-    @org.springframework.web.bind.annotation.ExceptionHandler(CorrectDelete.class)
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public ErrorsResponseDTO handleAcceptedErrors(CorrectDelete ex) {
-        return new ErrorsResponseDTO(ex.getMessage(), LocalDateTime.now());
-    }
 
     @org.springframework.web.bind.annotation.ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)

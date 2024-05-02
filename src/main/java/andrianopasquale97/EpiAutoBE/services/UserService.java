@@ -36,7 +36,7 @@ public class UserService {
     }
 
 
-    public User getByEmail(String email) {
+    public User findByEmail(String email) {
         return this.userDAO.findByEmail(email).orElseThrow(() -> new NotFoundException("Utente non trovato"));
     }
 

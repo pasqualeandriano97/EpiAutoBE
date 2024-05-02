@@ -3,6 +3,7 @@ package andrianopasquale97.EpiAutoBE.security;
 import andrianopasquale97.EpiAutoBE.entities.User;
 
 import andrianopasquale97.EpiAutoBE.exceptions.UnauthorizedException;
+import andrianopasquale97.EpiAutoBE.services.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +24,7 @@ public class JWTFilter extends OncePerRequestFilter {
     @Autowired
     private JWTTools jwtTools;
     @Autowired
-    private UtenteService utenteService;
+    private UserService utenteService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,

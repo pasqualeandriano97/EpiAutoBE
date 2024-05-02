@@ -36,12 +36,12 @@ public class User implements UserDetails {
     private List<Appointment> appointments;
 
 
-    public User(String name, String surname, String email, String password, Role role) {
+    public User(String name, String surname, String email, String password) {
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.password = password;
-        this.role = role;
+        this.role = Role.USER;
     }
 
     @Override

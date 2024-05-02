@@ -22,15 +22,19 @@ public class Rent {
     private LocalDate endDate;
     private LocalDate date;
     private int time;
-    private int vehicleId;   //relazione con Vehicle
-    private int userId;    //relazione con User
+    @ManyToOne
+    @JoinColumn(name = "vehicle_plate")
+    private Vehicle vehicle;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    public Rent(LocalDate startDate, LocalDate endDate, int time, LocalDate date, int vehicleId, int userId) {
+    public Rent(LocalDate startDate, LocalDate endDate, int time, LocalDate date, Vehicle vehicleId, User userId) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.time = time;
         this.date = date;
-        this.vehicleId = vehicleId;
-        this.userId = userId;
+        this.vehicle = vehicleId;
+        this.user = userId;
     }
 }

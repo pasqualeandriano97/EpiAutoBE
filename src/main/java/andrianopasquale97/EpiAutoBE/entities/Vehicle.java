@@ -1,12 +1,13 @@
 package andrianopasquale97.EpiAutoBE.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
@@ -22,6 +23,10 @@ public class Vehicle {
     private String type;
     private int year;
     private String imageUrl;
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL)
+    private List<Rent> rents;
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL)
+    private List<Appointment> appointments;
 
     public Vehicle(String plate, String fuelType, String brand, String model, String type, int year) {
         this.plate = plate;

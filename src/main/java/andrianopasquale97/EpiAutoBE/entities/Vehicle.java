@@ -28,12 +28,13 @@ public class Vehicle {
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL)
     private List<Appointment> appointments;
 
-    public Vehicle(String plate, String fuelType, String brand, String model, String type, int year) {
+    public Vehicle(String plate, String fuelType, String brand, String model, String type, int year,String image) {
         this.plate = plate;
         this.fuelType = fuelType;
         this.brand = brand;
         this.model = model;
         this.type = type;
         this.year = year;
+        this.imageUrl = image;
     }
 }

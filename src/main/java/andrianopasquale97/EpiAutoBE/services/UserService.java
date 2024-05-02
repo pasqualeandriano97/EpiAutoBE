@@ -22,7 +22,7 @@ public class UserService {
 
     public UserRespDTO save (UserDTO user) {
        this.userDAO.save(new User(user.name(), user.surname(), user.email(),passwordEncoder.encode(user.password())));
-        return new UserRespDTO(user.email());
+        return new UserRespDTO(user.name(),user.surname(),user.email());
     }
 
     public Page<User> getAll(int page, int size,String sortBy) {
@@ -35,7 +35,10 @@ public class UserService {
         return this.userDAO.findById(id).orElseThrow(() -> new NotFoundException("Utente non trovato"));
     }
 
-
+    public UserDTO getByNameAndSurname(String name, String surname) {
+        User findUser = this.userDAO.findBySurnameAndName(name, surname).orElseThrow(() -> new NotFoundException("Utente non trovato"));
+        return new UserDTO(findUser.getName(), findUser.getSurname(),findUser.getEmail(), findUser.getEmail());
+    }
     public User findByEmail(String email) {
         return this.userDAO.findByEmail(email).orElseThrow(() -> new NotFoundException("Utente non trovato"));
     }

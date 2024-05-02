@@ -1,0 +1,64 @@
+package andrianopasquale97.EpiAutoBE.controllers;
+
+import andrianopasquale97.EpiAutoBE.entities.User;
+import andrianopasquale97.EpiAutoBE.payloads.UserDTO;
+import andrianopasquale97.EpiAutoBE.services.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/user")
+public class UserController {
+    @Autowired
+    private UserService userService;
+
+    @GetMapping("")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public Page<User> getUsers(@RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "10") int size,
+                               @RequestParam(defaultValue = "id") String sortBy) {
+        return userService.getAll(page, size, sortBy);
+    }
+
+    @GetMapping("/userName")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public UserDTO getUserByNameAndSurname(@RequestParam String name, @RequestParam String surname) {
+        return userService.getByNameAndSurname(name, surname);
+    }
+
+
+    @GetMapping("/email")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public User getUserByEmail(@RequestParam String email) {
+        return userService.findByEmail(email);
+    }
+
+    @DeleteMapping("/{userId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public String deleteUser(@PathVariable int userId) {
+        return userService.findByIdAndDelete(userId);
+    }
+
+
+    @PutMapping("/me")
+    @PreAuthorize("hasAuthority('USER')")
+    public UserDTO updateUser(@AuthenticationPrincipal User currentUser,@Validated @RequestBody UserDTO user, BindingResult validation) {
+        return userService.findByIdAndUpdate(currentUser.getId(), user);
+    }
+
+   @DeleteMapping("/me")
+   @PreAuthorize("hasAuthority('USER')")
+   @ResponseStatus(HttpStatus.NO_CONTENT)
+    public String deleteCurrentUser(@AuthenticationPrincipal User currentUser) {
+       return userService.findByIdAndDelete(currentUser.getId());
+   }
+
+
+}

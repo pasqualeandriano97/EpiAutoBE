@@ -28,7 +28,8 @@ public class AuthController {
         if(validation.hasErrors()) {
             throw new BadRequestException(validation.getAllErrors());
         }
-        return new UserRespDTO(this.userService.save(body).email());
+        this.userService.save(body);
+        return new UserRespDTO(body.name(), body.surname(), body.email());
     }
 
 

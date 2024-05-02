@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 @Getter
 @Setter
@@ -22,6 +23,7 @@ public class Rent {
     private LocalDate endDate;
     private LocalDate date;
     private int time;
+    private double price;
     @ManyToOne
     @JoinColumn(name = "vehicle_plate")
     private Vehicle vehicle;
@@ -36,5 +38,15 @@ public class Rent {
         this.date = date;
         this.vehicle = vehicleId;
         this.user = userId;
+        this.price = calculatePrice();
+    }
+
+    private double calculatePrice() {
+        double startPrice= 50;
+        if (vehicle.getType().equals("super car")) {
+            startPrice = 300;
+        }
+        long daysDifference = ChronoUnit.DAYS.between(startDate, endDate);
+        return startPrice * daysDifference;
     }
 }

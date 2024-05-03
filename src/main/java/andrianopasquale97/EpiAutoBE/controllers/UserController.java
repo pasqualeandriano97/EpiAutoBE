@@ -1,6 +1,7 @@
 package andrianopasquale97.EpiAutoBE.controllers;
 
 import andrianopasquale97.EpiAutoBE.entities.User;
+import andrianopasquale97.EpiAutoBE.exceptions.BadRequestException;
 import andrianopasquale97.EpiAutoBE.payloads.UserDTO;
 import andrianopasquale97.EpiAutoBE.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,17 +40,20 @@ public class UserController {
         return userService.findByEmail(email);
     }
 
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/{email}")
     @PreAuthorize("hasAuthority('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public String deleteUser(@PathVariable int userId) {
-        return userService.findByIdAndDelete(userId);
+    public String deleteUser(@PathVariable String email) {
+        return userService.findByEmailAndDelete(email);
     }
 
 
     @PutMapping("/me")
     @PreAuthorize("hasAuthority('USER')")
     public UserDTO updateUser(@AuthenticationPrincipal User currentUser,@Validated @RequestBody UserDTO user, BindingResult validation) {
+        if(validation.hasErrors()) {
+            throw new BadRequestException(validation.getAllErrors());
+        }
         return userService.findByIdAndUpdate(currentUser.getId(), user);
     }
 

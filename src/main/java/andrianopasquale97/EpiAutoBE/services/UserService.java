@@ -43,8 +43,8 @@ public class UserService {
         return this.userDAO.findByEmail(email).orElseThrow(() -> new NotFoundException("Utente non trovato"));
     }
 
-    public String findByIdAndDelete(int id) {
-        User user = this.userDAO.findById(id).orElseThrow(() -> new NotFoundException("Utente non trovato"));
+    public String findByEmailAndDelete(String email) {
+        User user = this.userDAO.findByEmail(email).orElseThrow(() -> new NotFoundException("Utente non trovato"));
         this.userDAO.delete(user);
         return "Utente eliminato con successo";
     }
@@ -57,5 +57,12 @@ public class UserService {
         currentUser.setPassword(passwordEncoder.encode(user.password()));
         this.userDAO.save(currentUser);
         return user;
+    }
+
+
+    public String findByIdAndDelete(int id) {
+        User user = this.userDAO.findById(id).orElseThrow(() -> new NotFoundException("Utente non trovato"));
+        this.userDAO.delete(user);
+        return "Utente eliminato con successo";
     }
 }

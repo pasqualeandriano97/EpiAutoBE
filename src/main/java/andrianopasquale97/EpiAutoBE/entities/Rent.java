@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.sql.Time;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
@@ -22,7 +23,7 @@ public class Rent {
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalDate date;
-    private int time;
+    private Time time;
     private double price;
     @ManyToOne
     @JoinColumn(name = "vehicle_plate")
@@ -31,7 +32,7 @@ public class Rent {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public Rent(LocalDate startDate, LocalDate endDate, int time, LocalDate date, Vehicle vehicleId, User userId) {
+    public Rent(LocalDate startDate, LocalDate endDate,  LocalDate date,Time time, Vehicle vehicleId, User userId) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.time = time;

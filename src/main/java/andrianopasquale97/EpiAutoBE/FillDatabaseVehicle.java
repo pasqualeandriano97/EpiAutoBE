@@ -51,12 +51,17 @@ public class FillDatabaseVehicle {
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
+//        List<Vehicle> veicoli = vehicleDAO.findAll();
+//        for (Vehicle v : veicoli) {
+//           if(v.getBrand().equals("Ferrari")||v.getBrand().equals("Lamborghini")||v.getBrand().equals("Porsche")) {
+//               v.setType("super car");
+//               vehicleDAO.save(v);
+//           }
+//        }
         List<Vehicle> veicoli = vehicleDAO.findAll();
         for (Vehicle v : veicoli) {
-           if(v.getBrand().equals("Ferrari")||v.getBrand().equals("Lamborghini")||v.getBrand().equals("Porsche")) {
-               v.setType("super car");
-               vehicleDAO.save(v);
-           }
+            v.setState("DISPONIBILE");
+                vehicleDAO.save(v);
         }
     }
 }

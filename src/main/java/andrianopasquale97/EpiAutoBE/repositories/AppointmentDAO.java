@@ -14,6 +14,8 @@ import java.util.Optional;
 @Repository
 public interface AppointmentDAO extends JpaRepository<Appointment, Integer> {
     Optional<Appointment> findByVehicleAndDate(Vehicle vehicle, LocalDate date);
-    @Query("SELECT a FROM Appointment a WHERE a.appointmentDate = :appointmentDate")
-    List<Appointment> findAppointmentsByDate(@Param("appointmentDate") LocalDate appointmentDate);
+    @Query("SELECT a FROM Appointment a WHERE a.date = :date")
+    List<Appointment> findAppointmentsByDate(@Param("date") LocalDate date);
+    @Query("SELECT a FROM Appointment a WHERE a.user.id = :userId")
+    List<Appointment> findAppointmentsByUserId(@Param("userId") int userId);
 }

@@ -14,7 +14,8 @@ import java.util.List;
 
 @Repository
 public interface RentDAO extends JpaRepository<Rent, Integer> {
-    List<Rent> findByVehicle(String plate);
+    @Query("SELECT r FROM Rent r WHERE r.vehicle.plate = :plate")
+    List<Rent> findByVehicle(@Param("plate") String plate);
 
     Page<Rent> findByUserId(int id, Pageable pageable);
 
@@ -22,6 +23,6 @@ public interface RentDAO extends JpaRepository<Rent, Integer> {
     List<Rent> findActiveRentsToday();
     @Query("SELECT r FROM Rent r WHERE r.user.id = :userId AND r.startDate > CURRENT_DATE")
     List<Rent> findUpcomingRentsByUserId(@Param("userId") int userId);
-    @Query("SELECT r FROM Rent r WHERE r.rentDate = :rentDate")
-    List<Rent> findRentsByDate(@Param("rentDate") LocalDate rentDate);
+    @Query("SELECT r FROM Rent r WHERE r.date = :date")
+    List<Rent> findRentsByDate(@Param("date") LocalDate date);
 }

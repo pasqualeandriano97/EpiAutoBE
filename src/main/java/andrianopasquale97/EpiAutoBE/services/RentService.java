@@ -3,6 +3,7 @@ package andrianopasquale97.EpiAutoBE.services;
 import andrianopasquale97.EpiAutoBE.entities.Rent;
 import andrianopasquale97.EpiAutoBE.entities.User;
 import andrianopasquale97.EpiAutoBE.entities.Vehicle;
+import andrianopasquale97.EpiAutoBE.entities.enums.State;
 import andrianopasquale97.EpiAutoBE.exceptions.BadRequestException;
 import andrianopasquale97.EpiAutoBE.exceptions.NotFoundException;
 import andrianopasquale97.EpiAutoBE.payloads.RentDTO;
@@ -59,8 +60,12 @@ public class RentService {
                 }
             }
         }
+
         User user = userDAO.findById(id).orElseThrow(() -> new NotFoundException("Utente non trovato"));
         Vehicle vehicle = vehicleService.findByPlate(plate);
+        if(!vehicle.getState().equals(State.AVAILABLE)){
+            throw new BadRequestException("Il veicolo non è disponibile");
+        }
         if (LocalDate.parse(rent.date()).isAfter(LocalDate.parse(rent.startDate()))) {
             throw new BadRequestException("La data dell'appuntamento non può essere successiva alla data di inizio del noleggio");
         }
@@ -93,6 +98,10 @@ public class RentService {
 
     public RentRespDTO findbyRentIdandUpdate(int userId,int rentId, RentPostDTO rent){
         Rent rentToUpdate = rentDAO.findById(rentId).orElseThrow(() -> new NotFoundException("Noleggio non trovato"));
+        Vehicle vehicle = rentToUpdate.getVehicle();
+        if (!vehicle.getState().equals(State.AVAILABLE)) {
+            throw new BadRequestException("Il veicolo non è disponibile");
+        }
         if(rentToUpdate.getId() != userId) {
             throw new BadRequestException("Non sei autorizzato a modificare questo noleggio");}
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
@@ -106,7 +115,7 @@ public class RentService {
     }
 
     public List<Rent> getUpcomingRentsByUserId(int userId) {
-        User user = userDAO.findById(userId).orElseThrow(() -> new NotFoundException("Utente con id: " + userId+ " non trovato"));
+        User user = userDAO.findById(userId).orElseThrow(() -> new NotFoundException("Utente con id: " + userId + " non trovato"));
         return rentDAO.findUpcomingRentsByUserId(user.getId());
     }
 

@@ -40,14 +40,14 @@ public class RentController {
        return this.rentService.getAllRentsByUserId(user.getId(), page, size, sortBy);
     }
 
-    @GetMapping("/vehicle")
+    @GetMapping("/vehicle/plate")
     @PreAuthorize("hasAuthority('ADMIN')")
     public List<Rent> getRentByVehicle(@RequestParam String plate) {
         return this.rentService.getAllRentsByVehicle(plate);
     }
-    @GetMapping("/vehicle")
+    @GetMapping("/vehicle/today")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public List<Rent> getRentByVehicleActiveNow(@RequestParam String plate) {
+    public List<Rent> getRentByVehicleActiveNow() {
         return this.rentService.getActiveRentsToday();
     }
 

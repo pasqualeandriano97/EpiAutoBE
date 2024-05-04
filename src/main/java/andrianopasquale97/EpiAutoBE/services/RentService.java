@@ -24,6 +24,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static java.lang.Integer.parseInt;
+
 @Service
 public class RentService {
     @Autowired
@@ -37,8 +39,9 @@ public class RentService {
 
     public RentRespDTO save(int id, String plate, RentDTO rent) throws ParseException {
         List<Rent> rents = rentDAO.findByVehicle(plate);
+        LocalDate date = LocalDate.parse(rent.date());
+        List<Rent> rents2 = rentDAO.findRentsByDate(date);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        SimpleDateFormat formatter1 = new SimpleDateFormat("HH:mm");
         if (!rents.isEmpty()) {
             for (Rent r : rents) {
                 LocalDate startDate = r.getStartDate();
@@ -49,12 +52,19 @@ public class RentService {
                 }
             }
         }
+        if (!rents2.isEmpty()) {
+            for (Rent r : rents2) {
+                if (r.getTime() == parseInt(rent.startHour())) {
+                    throw new BadRequestException("L'ora inserita non è disponibile");
+                }
+            }
+        }
         User user = userDAO.findById(id).orElseThrow(() -> new NotFoundException("Utente non trovato"));
         Vehicle vehicle = vehicleService.findByPlate(plate);
         if (LocalDate.parse(rent.date()).isAfter(LocalDate.parse(rent.startDate()))) {
             throw new BadRequestException("La data dell'appuntamento non può essere successiva alla data di inizio del noleggio");
         }
-        Time time= new Time(formatter1.parse(rent.startHour()).getTime());
+        int time= parseInt(rent.startHour());
         Rent newRent = new Rent(LocalDate.parse(rent.startDate(), formatter), LocalDate.parse(rent.endDate(), formatter), LocalDate.parse(rent.date(), formatter), time, vehicle, user);
         rentDAO.save(newRent);
         return new RentRespDTO(newRent.getId(),rent.startDate(),rent.endDate(),rent.date(),rent.startHour(),vehicle.getBrand(),vehicle.getModel(),vehicle.getYear());
@@ -92,7 +102,7 @@ public class RentService {
         }else{
             throw new BadRequestException("La data di posticipazione fine noleggio non può essere precedente alla data di fine noleggio da modificare");
         }
-      return new RentRespDTO(rentToUpdate.getId(), rentToUpdate.getStartDate().toString(),rentToUpdate.getEndDate().toString(),rentToUpdate.getDate().toString(),rentToUpdate.getTime().toString(),rentToUpdate.getVehicle().getBrand(), rentToUpdate.getVehicle().getModel(), rentToUpdate.getVehicle().getYear());
+      return new RentRespDTO(rentToUpdate.getId(), rentToUpdate.getStartDate().toString(),rentToUpdate.getEndDate().toString(),rentToUpdate.getDate().toString(),rentToUpdate.toString(),rentToUpdate.getVehicle().getBrand(), rentToUpdate.getVehicle().getModel(), rentToUpdate.getVehicle().getYear());
     }
 
     public List<Rent> getUpcomingRentsByUserId(int userId) {

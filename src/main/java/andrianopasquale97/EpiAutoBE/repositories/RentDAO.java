@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -21,4 +22,6 @@ public interface RentDAO extends JpaRepository<Rent, Integer> {
     List<Rent> findActiveRentsToday();
     @Query("SELECT r FROM Rent r WHERE r.user.id = :userId AND r.startDate > CURRENT_DATE")
     List<Rent> findUpcomingRentsByUserId(@Param("userId") int userId);
+    @Query("SELECT r FROM Rent r WHERE r.rentDate = :rentDate")
+    List<Rent> findRentsByDate(@Param("rentDate") LocalDate rentDate);
 }

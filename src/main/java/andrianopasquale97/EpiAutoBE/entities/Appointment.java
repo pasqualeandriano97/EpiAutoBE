@@ -19,7 +19,7 @@ public class Appointment {
     @Setter(AccessLevel.NONE)
     private int id;
     private LocalDate date;
-    private int time;
+    private int hour;
     @ManyToOne
     @JoinColumn(name = "vehicle_plate")
     private Vehicle vehicle;
@@ -29,7 +29,7 @@ public class Appointment {
 
     public Appointment(LocalDate date, int time, Vehicle vehicleId, User userId) {
         this.date = date;
-        this.time = time;
+        this.hour = time;
         this.vehicle = vehicleId;
         this.user = userId;
     }

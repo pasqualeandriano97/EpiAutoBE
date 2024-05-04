@@ -23,7 +23,7 @@ public class Rent {
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalDate date;
-    private Time time;
+    private int time;
     private double price;
     @ManyToOne
     @JoinColumn(name = "vehicle_plate")
@@ -32,7 +32,7 @@ public class Rent {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public Rent(LocalDate startDate, LocalDate endDate,  LocalDate date,Time time, Vehicle vehicleId, User userId) {
+    public Rent(LocalDate startDate, LocalDate endDate,  LocalDate date,int time, Vehicle vehicleId, User userId) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.time = time;

@@ -18,4 +18,6 @@ public interface AppointmentDAO extends JpaRepository<Appointment, Integer> {
     List<Appointment> findAppointmentsByDate(@Param("date") LocalDate date);
     @Query("SELECT a FROM Appointment a WHERE a.user.id = :userId")
     List<Appointment> findAppointmentsByUserId(@Param("userId") int userId);
+    @Query("SELECT a FROM Appointment a WHERE a.date = :today")
+    List<Appointment> findAppointmentsByToday(@Param("today") LocalDate today);
 }

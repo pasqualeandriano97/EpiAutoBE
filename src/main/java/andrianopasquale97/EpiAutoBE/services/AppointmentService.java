@@ -12,6 +12,10 @@ import andrianopasquale97.EpiAutoBE.repositories.AppointmentDAO;
 import andrianopasquale97.EpiAutoBE.repositories.UserDAO;
 import andrianopasquale97.EpiAutoBE.repositories.VehicleDAO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -29,6 +33,20 @@ public class AppointmentService {
     private UserDAO userDAO;
     @Autowired
     private VehicleDAO vehicleDAO;
+
+    public List<AppointmentRespDTO> getAppointments(int page, int size,String sortby) {
+        if (sortby == null) {
+            sortby = "date";
+        }
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortby).descending());
+        Page<Appointment> appointments = appointmentDAO.findAll(pageable);
+        List<Appointment> appointmentList = appointments.getContent();
+        List<AppointmentRespDTO> appointmentRespDTOS = new ArrayList<>();
+        for (Appointment a : appointmentList) {
+            appointmentRespDTOS.add(new AppointmentRespDTO(Integer.toString(a.getId()), a.getDate().toString(), Integer.toString(a.getHour()), a.getVehicle().getPlate()));
+        }
+        return appointmentRespDTOS;
+    }
 
     public AppointmentRespDTO save (int userId,String plate,AppointmentDTO appointment) {
         User user = userDAO.findById(userId).orElseThrow(() -> new NotFoundException("Utente non trovato"));
@@ -48,7 +66,7 @@ public class AppointmentService {
         }
         if (!appointments.isEmpty()) {
             for (Appointment a : appointments) {
-                if (a.getHour()== parseInt(appointment.hour())) {
+                if (a.getHour() == parseInt(appointment.hour())) {
                     throw new BadRequestException("L'ora inserita non è disponibile");
                 }
             }
@@ -73,7 +91,7 @@ public class AppointmentService {
         return appointmentRespDTOS;
     }
 
-    public AppointmentRespDTO findAppointmentByUserIdAndUpdate(int userId,int appointmentId,String plate, AppointmentDTO appointment) {
+    public AppointmentRespDTO findAppointmentByUserIdAndUpdate(int userId,int appointmentId, AppointmentDTO appointment) {
         List<Appointment> appointments = appointmentDAO.findAppointmentsByUserId(userId);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         LocalDate date = LocalDate.parse(appointment.date(), formatter);
@@ -108,5 +126,30 @@ public class AppointmentService {
             return "Prenotazione eliminata";
         }
         throw new BadRequestException("Non sei autorizzato a cancellare questa prenotazione");
+    }
+
+    public List<AppointmentRespDTO> getAppointmentsByDate(String date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        List<Appointment> appointments = appointmentDAO.findAppointmentsByDate(LocalDate.parse(date, formatter));
+        List<AppointmentRespDTO> appointmentRespDTOS = new ArrayList<>();
+        if (appointments.isEmpty()) {
+            throw new NotFoundException("Non ci sono prenotazioni per questa data");
+        }
+        for (Appointment a : appointments) {
+            appointmentRespDTOS.add(new AppointmentRespDTO(Integer.toString(a.getId()), a.getDate().toString(), Integer.toString(a.getHour()), a.getVehicle().getPlate()));
+        }
+        return appointmentRespDTOS;
+    }
+
+    public List<AppointmentRespDTO> getAppointmentsByToday() {
+        List<Appointment> appointments = appointmentDAO.findAppointmentsByToday(LocalDate.now());
+        List<AppointmentRespDTO> appointmentRespDTOS = new ArrayList<>();
+        if (appointments.isEmpty()) {
+            throw new NotFoundException("Non ci sono prenotazioni per oggi");
+        }
+        for (Appointment a : appointments) {
+            appointmentRespDTOS.add(new AppointmentRespDTO(Integer.toString(a.getId()), a.getDate().toString(), Integer.toString(a.getHour()), a.getVehicle().getPlate()));
+        }
+        return appointmentRespDTOS;
     }
 }

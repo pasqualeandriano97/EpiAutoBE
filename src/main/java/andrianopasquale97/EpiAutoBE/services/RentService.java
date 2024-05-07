@@ -1,5 +1,6 @@
 package andrianopasquale97.EpiAutoBE.services;
 
+import andrianopasquale97.EpiAutoBE.entities.Maintenance;
 import andrianopasquale97.EpiAutoBE.entities.Rent;
 import andrianopasquale97.EpiAutoBE.entities.User;
 import andrianopasquale97.EpiAutoBE.entities.Vehicle;
@@ -9,8 +10,10 @@ import andrianopasquale97.EpiAutoBE.exceptions.NotFoundException;
 import andrianopasquale97.EpiAutoBE.payloads.RentDTO;
 import andrianopasquale97.EpiAutoBE.payloads.RentPostDTO;
 import andrianopasquale97.EpiAutoBE.payloads.RentRespDTO;
+import andrianopasquale97.EpiAutoBE.repositories.MaintenanceDAO;
 import andrianopasquale97.EpiAutoBE.repositories.RentDAO;
 import andrianopasquale97.EpiAutoBE.repositories.UserDAO;
+import andrianopasquale97.EpiAutoBE.repositories.VehicleDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,11 +35,15 @@ public class RentService {
     @Autowired
     private VehicleService vehicleService;
     @Autowired
+    private VehicleDAO vehicleDAO;
+    @Autowired
     private UserService userService;
     @Autowired
     private RentDAO rentDAO;
     @Autowired
     private UserDAO userDAO;
+    @Autowired
+    private MaintenanceDAO maintenanceDAO;
 
     public RentRespDTO save(int id, String plate, RentDTO rent) throws ParseException {
         List<Rent> rents = rentDAO.findByVehicle(plate);
@@ -60,9 +67,15 @@ public class RentService {
                 }
             }
         }
-
         User user = userDAO.findById(id).orElseThrow(() -> new NotFoundException("Utente non trovato"));
         Vehicle vehicle = vehicleService.findByPlate(plate);
+       List<Maintenance> maintenances=  this.maintenanceDAO.findByDateBetweenStartAndEndDate(LocalDate.parse(rent.startDate(),formatter));
+       if(!maintenances.isEmpty()) {
+           for (Maintenance m : maintenances) {
+               if (m.getVehicle().getPlate().equals(plate)) {
+                   throw new BadRequestException("Il veicolo non può essere noleggiato in questo giorno");
+               }}
+       }
         if(!vehicle.getState().equals(State.AVAILABLE)){
             throw new BadRequestException("Il veicolo non è disponibile");
         }
@@ -70,6 +83,8 @@ public class RentService {
             throw new BadRequestException("La data dell'appuntamento non può essere successiva alla data di inizio del noleggio");
         }
         int time= parseInt(rent.startHour());
+        vehicle.setState("NOLEGGIATA");
+        this.vehicleDAO.save(vehicle);
         Rent newRent = new Rent(LocalDate.parse(rent.startDate(), formatter), LocalDate.parse(rent.endDate(), formatter), LocalDate.parse(rent.date(), formatter), time, vehicle, user);
         rentDAO.save(newRent);
         return new RentRespDTO(newRent.getId(),rent.startDate(),rent.endDate(),rent.date(),rent.startHour(),vehicle.getBrand(),vehicle.getModel(),vehicle.getYear());

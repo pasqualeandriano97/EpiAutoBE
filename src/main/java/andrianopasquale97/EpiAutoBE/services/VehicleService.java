@@ -66,11 +66,27 @@ public class VehicleService {
         for (Vehicle v : vehicles) {
             List<Maintenance> maintenances= v.getMaintenances();
             for(Maintenance m : maintenances) {
-               if(LocalDate.now().isAfter(m.getStartDate())&& LocalDate.now().isBefore(m.getEndDate())) {
+               if(LocalDate.now().isAfter(m.getStartDate().minusDays(3))&& LocalDate.now().isBefore(m.getEndDate().plusDays(3))) {
                   m.getVehicle().setState("IN MANUTENZIONE");
                    this.vehicleDAO.save(m.getVehicle());
+               }else {
+                  m.getVehicle().setState("DISPONIBILE");
                }
             }
         }
+    }
+
+    public VehicleDTO rentCar(String plate) {
+        Vehicle currentVehicle = this.vehicleDAO.findByPlate(plate).orElseThrow(() -> new NotFoundException("Veicolo non trovato"));
+        currentVehicle.setState("NOLEGGIATA");
+        this.vehicleDAO.save(currentVehicle);
+        return new VehicleDTO(currentVehicle.getPlate(), currentVehicle.getBrand(), currentVehicle.getModel(), currentVehicle.getType(), currentVehicle.getFuelType(), currentVehicle.getYear(), currentVehicle.getImageUrl());
+    }
+
+    public VehicleDTO returnCar(String plate) {
+        Vehicle currentVehicle = this.vehicleDAO.findByPlate(plate).orElseThrow(() -> new NotFoundException("Veicolo non trovato"));
+        currentVehicle.setState("DISPONIBILE");
+        this.vehicleDAO.save(currentVehicle);
+        return new VehicleDTO(currentVehicle.getPlate(), currentVehicle.getBrand(), currentVehicle.getModel(), currentVehicle.getType(), currentVehicle.getFuelType(), currentVehicle.getYear(), currentVehicle.getImageUrl());
     }
 }

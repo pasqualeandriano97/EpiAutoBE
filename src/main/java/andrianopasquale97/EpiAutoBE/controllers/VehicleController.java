@@ -5,6 +5,7 @@ import andrianopasquale97.EpiAutoBE.exceptions.BadRequestException;
 import andrianopasquale97.EpiAutoBE.payloads.VehicleDTO;
 import andrianopasquale97.EpiAutoBE.payloads.VehicleImageDTO;
 import andrianopasquale97.EpiAutoBE.services.VehicleService;
+import org.hibernate.annotations.Fetch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -64,5 +65,12 @@ public class VehicleController {
             throw new BadRequestException(validation.getAllErrors());
         }
         return vehicleService.findByPlateAndUpdateImage(plate, vehicle);
+    }
+
+    @PatchMapping("")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public String updateAllVehicles(){
+        this.vehicleService.updateAllVehicles();
+        return "Aggiornamento completato";
     }
 }

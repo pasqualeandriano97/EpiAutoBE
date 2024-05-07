@@ -30,6 +30,8 @@ public class Vehicle {
     private List<Rent> rents;
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL)
     private List<Appointment> appointments;
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL)
+    private List<Maintenance> maintenances;
 
     public Vehicle(String plate, String fuelType, String brand, String model, String type, int year,String image) {
         this.plate = plate;

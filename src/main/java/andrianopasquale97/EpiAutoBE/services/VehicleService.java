@@ -1,5 +1,6 @@
 package andrianopasquale97.EpiAutoBE.services;
 
+import andrianopasquale97.EpiAutoBE.entities.Maintenance;
 import andrianopasquale97.EpiAutoBE.entities.Vehicle;
 import andrianopasquale97.EpiAutoBE.exceptions.NotFoundException;
 import andrianopasquale97.EpiAutoBE.payloads.VehicleDTO;
@@ -12,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Vector;
 
 @Service
@@ -56,5 +59,18 @@ public class VehicleService {
         currentVehicle.setImageUrl(imageUrl.imageUrl());
         this.vehicleDAO.save(currentVehicle);
         return new VehicleDTO(currentVehicle.getPlate(), currentVehicle.getBrand(), currentVehicle.getModel(), currentVehicle.getType(), currentVehicle.getFuelType(), currentVehicle.getYear(), currentVehicle.getImageUrl());
+    }
+
+    public void updateAllVehicles() {
+        List<Vehicle> vehicles = this.vehicleDAO.findAll();
+        for (Vehicle v : vehicles) {
+            List<Maintenance> maintenances= v.getMaintenances();
+            for(Maintenance m : maintenances) {
+               if(LocalDate.now().isAfter(m.getStartDate())&& LocalDate.now().isBefore(m.getEndDate())) {
+                  m.getVehicle().setState("IN MANUTENZIONE");
+                   this.vehicleDAO.save(m.getVehicle());
+               }
+            }
+        }
     }
 }

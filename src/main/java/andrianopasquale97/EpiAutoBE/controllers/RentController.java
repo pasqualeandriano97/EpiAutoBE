@@ -45,7 +45,7 @@ public class RentController {
     public List<Rent> getRentByVehicle(@RequestParam String plate) {
         return this.rentService.getAllRentsByVehicle(plate);
     }
-    @GetMapping("/vehicle/today")
+    @GetMapping("/today")
     @PreAuthorize("hasAuthority('ADMIN')")
     public List<Rent> getRentByVehicleActiveNow() {
         return this.rentService.getActiveRentsToday();
@@ -64,7 +64,6 @@ public class RentController {
     }
 
     @PostMapping("")
-    @PreAuthorize("hasAuthority('ADMIN')")
     public RentRespDTO saveRent(@AuthenticationPrincipal User user, @RequestParam String plate, @Validated @RequestBody RentDTO rent, BindingResult validation) throws ParseException {
         if (validation.hasErrors()) {
             throw new BadRequestException(validation.getAllErrors());

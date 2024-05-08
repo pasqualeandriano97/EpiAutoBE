@@ -1,5 +1,6 @@
 package andrianopasquale97.EpiAutoBE.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

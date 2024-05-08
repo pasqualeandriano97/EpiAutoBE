@@ -1,6 +1,7 @@
 package andrianopasquale97.EpiAutoBE.entities;
 
 import andrianopasquale97.EpiAutoBE.entities.enums.State;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @Table(name = "Vehicles")
+@JsonIgnoreProperties({"rents", "appointments", "maintenances"})
 public class Vehicle {
     @Id
     @Setter(AccessLevel.NONE)

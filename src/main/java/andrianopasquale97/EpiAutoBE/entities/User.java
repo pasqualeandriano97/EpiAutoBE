@@ -1,6 +1,7 @@
 package andrianopasquale97.EpiAutoBE.entities;
 
 import andrianopasquale97.EpiAutoBE.entities.enums.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -32,7 +33,9 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Rent> rents;
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<Appointment> appointments;
 

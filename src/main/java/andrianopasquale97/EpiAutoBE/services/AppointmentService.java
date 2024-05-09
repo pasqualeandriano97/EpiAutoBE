@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static java.lang.Integer.parseInt;
 
@@ -60,9 +61,12 @@ public class AppointmentService {
         if(date.isBefore(LocalDate.now())|| date.isEqual(LocalDate.now())) {
             throw new BadRequestException("Data non valida");
         }
-        Appointment appointment1= this.appointmentDAO.findByVehicleAndDate(vehicle, date).orElseThrow();
-        if (appointmentDAO.findByVehicleAndDate(vehicle, date).isPresent() && appointment1.getHour() == parseInt(appointment.hour())) {
-            throw new BadRequestException("Veicolo già prenotato");
+
+        if (appointmentDAO.findByVehicleAndDate(vehicle, date).isPresent()) {
+          Appointment appointment1 = this.appointmentDAO.findByVehicleAndDate(vehicle, date).get();
+            if( appointment1.getHour() == parseInt(appointment.hour())){
+                throw new BadRequestException("Veicolo già prenotato");
+            }
         }
         if (!appointments.isEmpty()) {
             for (Appointment a : appointments) {
@@ -71,7 +75,7 @@ public class AppointmentService {
                 }
             }
         }
-        Appointment newAppointment = new Appointment(LocalDate.parse(appointment.date(),formatter),parseInt(appointment.hour()) , vehicle, user);
+        Appointment newAppointment = new Appointment(LocalDate.parse(appointment.date(),formatter),Integer.parseInt(appointment.hour()), vehicle, user);
         this.appointmentDAO.save(newAppointment);
         return new AppointmentRespDTO(Integer.toString(newAppointment.getId()), newAppointment.getDate().toString(),Integer.toString(newAppointment.getHour()), newAppointment.getVehicle().getPlate());
     }
@@ -83,6 +87,16 @@ public class AppointmentService {
 
     public List<AppointmentRespDTO> findAppointmentsByUserId(int userId) {
         User user = userDAO.findById(userId).orElseThrow(() -> new NotFoundException("Utente non trovato"));
+        List<Appointment> appointments = appointmentDAO.findAppointmentsByUserId(user.getId());
+        List<AppointmentRespDTO> appointmentRespDTOS = new ArrayList<>();
+        for (Appointment a : appointments) {
+            appointmentRespDTOS.add(new AppointmentRespDTO(Integer.toString(a.getId()), a.getDate().toString(), Integer.toString(a.getHour()), a.getVehicle().getPlate()));
+        }
+        return appointmentRespDTOS;
+    }
+
+    public List<AppointmentRespDTO> findAppointmentsByUserEmail(String email) {
+        User user = userDAO.findByEmail(email).orElseThrow(() -> new NotFoundException("Utente non trovato"));
         List<Appointment> appointments = appointmentDAO.findAppointmentsByUserId(user.getId());
         List<AppointmentRespDTO> appointmentRespDTOS = new ArrayList<>();
         for (Appointment a : appointments) {

@@ -51,10 +51,10 @@ public class AppointmentController {
         return appointmentService.findAppointmentsByUserId(user.getId());
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("/user")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public List<AppointmentRespDTO> getAppointmentsByUserId(@PathVariable int userId) {
-        return appointmentService.findAppointmentsByUserId(userId);
+    public List<AppointmentRespDTO> getAppointmentsByUserEmail(@RequestParam String email) {
+        return appointmentService.findAppointmentsByUserEmail(email);
     }
 
     @PutMapping("/me")

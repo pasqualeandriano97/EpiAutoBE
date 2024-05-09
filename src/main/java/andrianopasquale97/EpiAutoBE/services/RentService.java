@@ -140,10 +140,14 @@ public class RentService {
     public String dismissRentByUserId(int userId, int rentId) {
        List<Rent> rents = this.getUpcomingRentsByUserId(userId);
         for (Rent rent : rents) {
-            if (rent.getId() == rentId) {
+            if (rent.getId() == rentId ) {
+                if(rent.getStartDate().isBefore(LocalDate.now())){
+                throw new BadRequestException("Non puoi eliminare un noleggio in corso");
+            }
                 this.rentDAO.delete(rent);
                 return "Noleggio eliminato";
             }
+
         }
         throw new NotFoundException("Noleggio con id: " + rentId + " non trovato");
     }

@@ -23,7 +23,9 @@ public class MaintenanceController {
 
     @GetMapping("")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public Page<MaintenanceRespDTO> getMaintenances(int page, int size, String sortBy) {
+    public Page<MaintenanceRespDTO> getMaintenances(@RequestParam(defaultValue = "0") int page,
+                                                    @RequestParam(defaultValue = "10") int size,
+                                                    @RequestParam(defaultValue = "id") String sortBy) {
         return maintenanceService.getAllMaintenances(page, size, sortBy);
     }
 

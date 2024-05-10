@@ -4,6 +4,8 @@ import andrianopasquale97.EpiAutoBE.entities.Vehicle;
 import andrianopasquale97.EpiAutoBE.exceptions.BadRequestException;
 import andrianopasquale97.EpiAutoBE.payloads.VehicleDTO;
 import andrianopasquale97.EpiAutoBE.payloads.VehicleImageDTO;
+import andrianopasquale97.EpiAutoBE.payloads.VehicleRespDTO;
+import andrianopasquale97.EpiAutoBE.payloads.VehicleUpdateDTO;
 import andrianopasquale97.EpiAutoBE.services.VehicleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -50,7 +52,7 @@ public class VehicleController {
 
     @PutMapping("/plate")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public VehicleDTO updateVehicleByPlate(@RequestParam String plate, @Validated @RequestBody VehicleDTO vehicle, BindingResult validation) {
+    public VehicleDTO updateVehicleByPlate(@RequestParam String plate, @Validated @RequestBody VehicleUpdateDTO vehicle, BindingResult validation) {
         if(validation.hasErrors()) {
             throw new BadRequestException(validation.getAllErrors());
         }
@@ -67,13 +69,13 @@ public class VehicleController {
     }
     @PatchMapping("/rent")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public VehicleDTO rentCar(@RequestParam String vehicle) {
+    public VehicleRespDTO rentCar(@RequestParam String vehicle) {
         return vehicleService.rentCar(vehicle);
     }
 
     @PatchMapping("/return")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public VehicleDTO returnCar(@RequestParam String vehicle) {
+    public VehicleRespDTO returnCar(@RequestParam String vehicle) {
         return vehicleService.returnCar(vehicle);
     }
 

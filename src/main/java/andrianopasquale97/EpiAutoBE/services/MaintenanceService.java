@@ -27,7 +27,21 @@ public class MaintenanceService {
 
     public MaintenanceRespDTO save (MaintenanceDTO maintenance){
         Vehicle vehicle = vehicleService.findByPlate(maintenance.vehiclePlate());
+        List<MaintenanceRespDTO> maintenances= this.findByPlate(maintenance.vehiclePlate());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        if(!maintenances.isEmpty()){
+            LocalDate startDate = LocalDate.parse(maintenance.startDate(),formatter);
+            LocalDate endDate = LocalDate.parse(maintenance.endDate(),formatter);
+            for (MaintenanceRespDTO m : maintenances) {
+                DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+               LocalDate mStartDate = LocalDate.parse(m.startDate(),formatter2);
+                LocalDate mEndDate = LocalDate.parse(m.endDate(),formatter2);
+                if (startDate.isAfter(mStartDate) && startDate.isBefore(mEndDate) || endDate.isAfter(mStartDate) && endDate.isBefore(mEndDate)) {
+                    throw new BadRequestException("La manutenzione per quest'auto è gia stata registrata");
+                }
+            }
+        }
+
         LocalDate startDate = LocalDate.parse(maintenance.startDate(), formatter);
         LocalDate endDate = LocalDate.parse(maintenance.endDate(), formatter);
         int startEndDateComparison = startDate.compareTo(endDate);
@@ -50,7 +64,7 @@ public class MaintenanceService {
         }
         Maintenance newMaintenance= new Maintenance(startDate,endDate,vehicle);
         maintenanceDAO.save(newMaintenance);
-        return new MaintenanceRespDTO(maintenance.startDate(), maintenance.endDate(), vehicle.getPlate());
+        return new MaintenanceRespDTO(String.valueOf(newMaintenance.getId()),maintenance.startDate(), maintenance.endDate(), vehicle.getPlate());
     }
 
     public Page<MaintenanceRespDTO> getAllMaintenances(int page, int size,String sortBy) {
@@ -58,7 +72,7 @@ public class MaintenanceService {
         Page<Maintenance> maintenancesPage = maintenanceDAO.findAll(pageable);
         List<MaintenanceRespDTO> maintenanceRespDTOs = new ArrayList<>();
         for (Maintenance maintenance : maintenancesPage.getContent()) {
-            maintenanceRespDTOs.add(new MaintenanceRespDTO(maintenance.getStartDate().toString(), maintenance.getEndDate().toString(), maintenance.getVehicle().getPlate()));
+            maintenanceRespDTOs.add(new MaintenanceRespDTO(String.valueOf(maintenance.getId()),maintenance.getStartDate().toString(), maintenance.getEndDate().toString(), maintenance.getVehicle().getPlate()));
         }
         return new PageImpl<>(maintenanceRespDTOs, pageable, maintenancesPage.getTotalElements());
     }
@@ -70,7 +84,7 @@ public class MaintenanceService {
         }
         List<MaintenanceRespDTO> maintenanceRespDTOs = new ArrayList<>();
        for (Maintenance maintenance1 : maintenance) {
-        maintenanceRespDTOs.add(new MaintenanceRespDTO(maintenance1.getStartDate().toString(), maintenance1.getEndDate().toString(), maintenance1.getVehicle().getPlate())) ;
+        maintenanceRespDTOs.add(new MaintenanceRespDTO(String.valueOf(maintenance1.getId()),maintenance1.getStartDate().toString(), maintenance1.getEndDate().toString(), maintenance1.getVehicle().getPlate())) ;
     }
        return maintenanceRespDTOs;
     }
@@ -79,9 +93,12 @@ public class MaintenanceService {
        Maintenance maintenance = maintenanceDAO.findById(Integer.parseInt(maintenanceDTO.maintenanceId())).orElseThrow(() -> new BadRequestException("Manutenzione non trovata"));
        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         LocalDate newDate = LocalDate.parse(maintenanceDTO.endDate(), formatter);
+        if (newDate.isBefore(maintenance.getStartDate()) || newDate.isEqual(maintenance.getStartDate())) {
+            throw new BadRequestException("La data di fine non può essere precedente o uguale alla data di inizio");
+        }
         maintenance.setEndDate(newDate);
         maintenanceDAO.save(maintenance);
-        return new MaintenanceRespDTO(maintenance.getStartDate().toString(), maintenance.getEndDate().toString(), maintenance.getVehicle().getPlate());
+        return new MaintenanceRespDTO(String.valueOf(maintenance.getId()),maintenance.getStartDate().toString(), maintenance.getEndDate().toString(), maintenance.getVehicle().getPlate());
     }
 
 }

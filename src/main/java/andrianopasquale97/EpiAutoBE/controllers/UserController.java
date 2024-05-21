@@ -2,7 +2,10 @@ package andrianopasquale97.EpiAutoBE.controllers;
 
 import andrianopasquale97.EpiAutoBE.entities.User;
 import andrianopasquale97.EpiAutoBE.exceptions.BadRequestException;
+import andrianopasquale97.EpiAutoBE.payloads.ResponseMessageDTO;
 import andrianopasquale97.EpiAutoBE.payloads.UserDTO;
+import andrianopasquale97.EpiAutoBE.payloads.UserRespDTO;
+import andrianopasquale97.EpiAutoBE.payloads.UserUpdateDTO;
 import andrianopasquale97.EpiAutoBE.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -35,22 +38,28 @@ public class UserController {
 
 
     @GetMapping("/email")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
     public User getUserByEmail(@RequestParam String email) {
         return userService.findByEmail(email);
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
+    public User getUser(@AuthenticationPrincipal User currentUser) {
+        return userService.getById(currentUser.getId());
     }
 
     @DeleteMapping("/{email}")
     @PreAuthorize("hasAuthority('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public String deleteUser(@PathVariable String email) {
+    public ResponseMessageDTO deleteUser(@PathVariable String email) {
         return userService.findByEmailAndDelete(email);
     }
 
 
     @PutMapping("/me")
-    @PreAuthorize("hasAuthority('USER')")
-    public UserDTO updateUser(@AuthenticationPrincipal User currentUser,@Validated @RequestBody UserDTO user, BindingResult validation) {
+    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    public UserUpdateDTO updateUser(@AuthenticationPrincipal User currentUser, @Validated @RequestBody UserUpdateDTO user, BindingResult validation) {
         if(validation.hasErrors()) {
             throw new BadRequestException(validation.getAllErrors());
         }
@@ -60,7 +69,7 @@ public class UserController {
    @DeleteMapping("/me")
    @PreAuthorize("hasAuthority('USER')")
    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public String deleteCurrentUser(@AuthenticationPrincipal User currentUser) {
+    public ResponseMessageDTO deleteCurrentUser(@AuthenticationPrincipal User currentUser) {
        return userService.findByIdAndDelete(currentUser.getId());
    }
 

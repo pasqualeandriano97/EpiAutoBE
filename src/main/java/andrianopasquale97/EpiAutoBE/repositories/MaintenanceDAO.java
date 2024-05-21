@@ -1,6 +1,7 @@
 package andrianopasquale97.EpiAutoBE.repositories;
 
 import andrianopasquale97.EpiAutoBE.entities.Maintenance;
+import andrianopasquale97.EpiAutoBE.entities.Vehicle;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,4 +17,6 @@ public interface MaintenanceDAO extends JpaRepository<Maintenance, Integer> {
     List<Maintenance> findByDateBetweenStartAndEndDate(@Param("date") LocalDate date);
 
    List<Maintenance>findByVehiclePlate(String plate);
+
+    List<Maintenance> findByVehicle(Vehicle vehicle);
 }

@@ -2,10 +2,7 @@ package andrianopasquale97.EpiAutoBE.controllers;
 
 import andrianopasquale97.EpiAutoBE.entities.Vehicle;
 import andrianopasquale97.EpiAutoBE.exceptions.BadRequestException;
-import andrianopasquale97.EpiAutoBE.payloads.VehicleDTO;
-import andrianopasquale97.EpiAutoBE.payloads.VehicleImageDTO;
-import andrianopasquale97.EpiAutoBE.payloads.VehicleRespDTO;
-import andrianopasquale97.EpiAutoBE.payloads.VehicleUpdateDTO;
+import andrianopasquale97.EpiAutoBE.payloads.*;
 import andrianopasquale97.EpiAutoBE.services.VehicleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,7 +21,7 @@ public class VehicleController {
     @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
     public Page<Vehicle> getVehicles(@RequestParam(defaultValue = "0") int page,
                                      @RequestParam(defaultValue = "20") int size,
-                                     @RequestParam(defaultValue = "plate") String sortBy){
+                                     @RequestParam(defaultValue = "imageUrl") String sortBy){
         return vehicleService.getAllVehicles(page, size, sortBy);
     }
 
@@ -46,7 +43,7 @@ public class VehicleController {
 
     @DeleteMapping("/plate")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public String deleteVehicleByPlate(@RequestParam String plate) {
+    public ResponseMessageDTO deleteVehicleByPlate(@RequestParam String plate) {
         return vehicleService.findByPlateAndDelete(plate);
     }
 
@@ -73,6 +70,12 @@ public class VehicleController {
         return vehicleService.rentCar(vehicle);
     }
 
+    @PatchMapping("/sell")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public VehicleRespDTO sellCar(@RequestParam String vehicle) {
+        return vehicleService.sellCar(vehicle);
+    }
+
     @PatchMapping("/return")
     @PreAuthorize("hasAuthority('ADMIN')")
     public VehicleRespDTO returnCar(@RequestParam String vehicle) {
@@ -81,8 +84,7 @@ public class VehicleController {
 
     @PatchMapping("")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public String updateAllVehicles(){
-        this.vehicleService.updateAllVehicles();
-        return "Aggiornamento completato";
+    public ResponseMessageDTO updateAllVehicles(){
+       return this.vehicleService.updateAllVehicles();
     }
 }

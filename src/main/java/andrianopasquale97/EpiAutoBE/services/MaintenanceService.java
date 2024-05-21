@@ -27,7 +27,11 @@ public class MaintenanceService {
 
     public MaintenanceRespDTO save (MaintenanceDTO maintenance){
         Vehicle vehicle = vehicleService.findByPlate(maintenance.vehiclePlate());
-        List<MaintenanceRespDTO> maintenances= this.findByPlate(maintenance.vehiclePlate());
+        List<Maintenance> maintenances1 = maintenanceDAO.findByVehicle(vehicle);
+        List<MaintenanceRespDTO> maintenances= new ArrayList<>();
+        for (Maintenance m : maintenances1) {
+            maintenances.add(new MaintenanceRespDTO(Integer.toString(m.getId()),m.getStartDate().toString(), m.getEndDate().toString(),m.getVehicle().getPlate()));
+        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         if(!maintenances.isEmpty()){
             LocalDate startDate = LocalDate.parse(maintenance.startDate(),formatter);
@@ -68,7 +72,7 @@ public class MaintenanceService {
     }
 
     public Page<MaintenanceRespDTO> getAllMaintenances(int page, int size,String sortBy) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).descending());
         Page<Maintenance> maintenancesPage = maintenanceDAO.findAll(pageable);
         List<MaintenanceRespDTO> maintenanceRespDTOs = new ArrayList<>();
         for (Maintenance maintenance : maintenancesPage.getContent()) {
@@ -99,6 +103,11 @@ public class MaintenanceService {
         maintenance.setEndDate(newDate);
         maintenanceDAO.save(maintenance);
         return new MaintenanceRespDTO(String.valueOf(maintenance.getId()),maintenance.getStartDate().toString(), maintenance.getEndDate().toString(), maintenance.getVehicle().getPlate());
+    }
+
+    public MaintenanceRespDTO findById(int maintenanceId) {
+        Maintenance maintenance = maintenanceDAO.findById(maintenanceId).orElseThrow(() -> new BadRequestException("Manutenzione non trovata"));
+        return new MaintenanceRespDTO(String.valueOf(maintenance.getId()), maintenance.getStartDate().toString(), maintenance.getEndDate().toString(), maintenance.getVehicle().getPlate());
     }
 
 }

@@ -3,9 +3,7 @@ package andrianopasquale97.EpiAutoBE.controllers;
 import andrianopasquale97.EpiAutoBE.entities.Rent;
 import andrianopasquale97.EpiAutoBE.entities.User;
 import andrianopasquale97.EpiAutoBE.exceptions.BadRequestException;
-import andrianopasquale97.EpiAutoBE.payloads.RentDTO;
-import andrianopasquale97.EpiAutoBE.payloads.RentPostDTO;
-import andrianopasquale97.EpiAutoBE.payloads.RentRespDTO;
+import andrianopasquale97.EpiAutoBE.payloads.*;
 import andrianopasquale97.EpiAutoBE.services.RentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -26,10 +24,15 @@ public class RentController {
 
     @GetMapping("")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public Page<Rent> getRent(@RequestParam(defaultValue = "0") int page,
+    public Page<Rent> getRents(@RequestParam(defaultValue = "0") int page,
                               @RequestParam(defaultValue = "20") int size,
-                              @RequestParam(defaultValue = "id") String sortBy) {
+                              @RequestParam(defaultValue = "startDate") String sortBy) {
         return rentService.getAllRents(page, size, sortBy);
+    }
+    @GetMapping("/{rentId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public Rent getRentById(@PathVariable int rentId) {
+        return rentService.findbyRentId(rentId);
     }
 
     @GetMapping("/me")
@@ -59,15 +62,20 @@ public class RentController {
     }
 
     @DeleteMapping("/me")
-    public String deleteMyRents(@AuthenticationPrincipal User user,@RequestParam int rentId) {
+    public ResponseMessageDTO deleteMyRents(@AuthenticationPrincipal User user, @RequestParam int rentId) {
         return this.rentService.dismissRentByUserId(user.getId(), rentId);
     }
 
     @PostMapping("")
-    public RentRespDTO saveRent(@AuthenticationPrincipal User user, @RequestParam String plate, @Validated @RequestBody RentDTO rent, BindingResult validation) throws ParseException {
+    public Rent showRent(@AuthenticationPrincipal User user, @RequestParam String plate, @Validated @RequestBody RentDTO rent, BindingResult validation) throws ParseException {
         if (validation.hasErrors()) {
             throw new BadRequestException(validation.getAllErrors());
         }
-        return this.rentService.save(user.getId(), plate,rent);
+        return this.rentService.show(user.getId(), plate,rent);
+    }
+
+    @PostMapping("/save")
+    public RentRespDTO saveRent(@AuthenticationPrincipal User user,@RequestBody RentPayloadDTO rent) {
+        return this.rentService.save(user.getId(),rent);
     }
 }

@@ -1,9 +1,12 @@
 package andrianopasquale97.EpiAutoBE.controllers;
 
+import andrianopasquale97.EpiAutoBE.entities.Appointment;
 import andrianopasquale97.EpiAutoBE.entities.User;
 import andrianopasquale97.EpiAutoBE.exceptions.BadRequestException;
 import andrianopasquale97.EpiAutoBE.payloads.AppointmentDTO;
+import andrianopasquale97.EpiAutoBE.payloads.AppointmentPayloadDTO;
 import andrianopasquale97.EpiAutoBE.payloads.AppointmentRespDTO;
+import andrianopasquale97.EpiAutoBE.payloads.ResponseMessageDTO;
 import andrianopasquale97.EpiAutoBE.services.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,7 +50,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/me")
-    public List<AppointmentRespDTO> getMyAppointments(@AuthenticationPrincipal User user) {
+    public List<Appointment> getMyAppointments(@AuthenticationPrincipal User user) {
         return appointmentService.findAppointmentsByUserId(user.getId());
     }
 
@@ -68,17 +71,21 @@ public class AppointmentController {
     }
 
     @PostMapping("/me")
-    public AppointmentRespDTO createAppointment(@AuthenticationPrincipal User user,
-                                                @RequestParam String plate,
-                                                @Validated @RequestBody AppointmentDTO appointment, BindingResult validation) {
+    public Appointment createAppointment(@AuthenticationPrincipal User user,
+                                         @RequestParam String plate,
+                                         @Validated @RequestBody AppointmentDTO appointment, BindingResult validation) {
         if (validation.hasErrors()) {
             throw new BadRequestException(validation.getAllErrors());
         }
-        return appointmentService.save(user.getId(),plate, appointment);
+        return appointmentService.show(user.getId(),plate, appointment);
+    }
+    @PostMapping("/me/save")
+    public AppointmentRespDTO saveAppointment(@AuthenticationPrincipal User user, @RequestBody AppointmentPayloadDTO appointmentPayload){
+        return appointmentService.save(user.getId(), appointmentPayload);
     }
 
     @DeleteMapping("/{appointmentId}")
-    public String deleteAppointment(@AuthenticationPrincipal User user, @PathVariable String appointmentId) {
+    public ResponseMessageDTO deleteAppointment(@AuthenticationPrincipal User user, @PathVariable String appointmentId) {
         return appointmentService.deleteAppointmentByUserId(user.getId(), Integer.parseInt(appointmentId));
     }
 }

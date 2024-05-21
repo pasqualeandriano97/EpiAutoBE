@@ -43,10 +43,16 @@ public class Rent {
         this.price = calculatePrice();
     }
 
-    private double calculatePrice() {
-        double startPrice= 50;
+    public double calculatePrice() {
+        double startPrice = switch (vehicle.getBrand()) {
+            case "Alfa-romeo", "Land Rover", "Polaris", "Tesla", "Volvo" -> 100;
+            case "Aston Martin", "Bentley", "Jaguar", "Maserati" -> 200;
+            case "Audi", "BMW", "Lexus", "Lotus", "Mercedes-benz", "Volkswagen" -> 120;
+            default -> 50;
+        };
+
         if (vehicle.getType().equals("super car")) {
-            startPrice = 300;
+            startPrice = 500;
         }
         long daysDifference = ChronoUnit.DAYS.between(startDate, endDate);
         return startPrice * daysDifference;

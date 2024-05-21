@@ -1,6 +1,6 @@
 package andrianopasquale97.EpiAutoBE.controllers;
 
-import andrianopasquale97.EpiAutoBE.entities.Maintenance;
+
 import andrianopasquale97.EpiAutoBE.exceptions.BadRequestException;
 import andrianopasquale97.EpiAutoBE.payloads.MaintenanceDTO;
 import andrianopasquale97.EpiAutoBE.payloads.MaintenancePostDTO;
@@ -25,8 +25,14 @@ public class MaintenanceController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public Page<MaintenanceRespDTO> getMaintenances(@RequestParam(defaultValue = "0") int page,
                                                     @RequestParam(defaultValue = "10") int size,
-                                                    @RequestParam(defaultValue = "id") String sortBy) {
+                                                    @RequestParam(defaultValue = "startDate") String sortBy) {
         return maintenanceService.getAllMaintenances(page, size, sortBy);
+    }
+
+    @GetMapping("/{maintenanceId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public MaintenanceRespDTO getMaintenanceById(@PathVariable int maintenanceId) {
+        return maintenanceService.findById(maintenanceId);
     }
 
     @GetMapping("/vehicle")

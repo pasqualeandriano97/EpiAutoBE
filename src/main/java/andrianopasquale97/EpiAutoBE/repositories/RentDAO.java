@@ -19,6 +19,8 @@ public interface RentDAO extends JpaRepository<Rent, Integer> {
 
     Page<Rent> findByUserId(int id, Pageable pageable);
 
+    List<Rent> findByUserId(int id);
+
     @Query("SELECT r FROM Rent r WHERE r.startDate <= CURRENT_DATE AND r.endDate >= CURRENT_DATE")
     List<Rent> findActiveRentsToday();
     @Query("SELECT r FROM Rent r WHERE r.user.id = :userId AND r.startDate > CURRENT_DATE")

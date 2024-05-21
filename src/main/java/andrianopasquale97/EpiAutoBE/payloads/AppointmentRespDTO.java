@@ -4,6 +4,9 @@ public record AppointmentRespDTO(
         String id,
         String date,
         String hour,
-        String vehiclePlate
+        String vehiclePlate,
+        String name,
+        String surname,
+        String email
 ) {
 }

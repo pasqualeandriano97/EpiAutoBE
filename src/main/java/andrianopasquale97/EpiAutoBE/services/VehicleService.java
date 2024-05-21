@@ -2,12 +2,10 @@ package andrianopasquale97.EpiAutoBE.services;
 
 import andrianopasquale97.EpiAutoBE.entities.Maintenance;
 import andrianopasquale97.EpiAutoBE.entities.Vehicle;
+import andrianopasquale97.EpiAutoBE.entities.enums.State;
 import andrianopasquale97.EpiAutoBE.exceptions.BadRequestException;
 import andrianopasquale97.EpiAutoBE.exceptions.NotFoundException;
-import andrianopasquale97.EpiAutoBE.payloads.VehicleDTO;
-import andrianopasquale97.EpiAutoBE.payloads.VehicleImageDTO;
-import andrianopasquale97.EpiAutoBE.payloads.VehicleRespDTO;
-import andrianopasquale97.EpiAutoBE.payloads.VehicleUpdateDTO;
+import andrianopasquale97.EpiAutoBE.payloads.*;
 import andrianopasquale97.EpiAutoBE.repositories.VehicleDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,11 +14,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 @Service
 public class VehicleService {
@@ -28,9 +26,16 @@ public class VehicleService {
     private VehicleDAO vehicleDAO;
     public Page<Vehicle> getAllVehicles(int page, int size, String sortBy) {
         if (size > 20) size = 20;
-        if (sortBy == null) sortBy = "plate";
+
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        return vehicleDAO.findAll(pageable);
+        Pageable pageable2 = PageRequest.of(page, size);
+
+        if (sortBy == null || sortBy.equals("imageUrl")) {
+            return vehicleDAO.findAllOrderedByImageUrl(pageable2);
+        } else {
+            return vehicleDAO.findAll(pageable);
+        }
     }
 
     public Vehicle findByPlate(String plate) {
@@ -47,10 +52,10 @@ public class VehicleService {
         return newVehicle;
     }
 
-    public String findByPlateAndDelete(String plate) {
+    public ResponseMessageDTO findByPlateAndDelete(String plate) {
         Vehicle vehicle = this.vehicleDAO.findByPlate(plate).orElseThrow(() -> new NotFoundException("Veicolo non trovato"));
         this.vehicleDAO.delete(vehicle);
-        return "Veicolo eliminato con successo";
+        return new ResponseMessageDTO("Veicolo eliminato con successo") ;
     }
 
 
@@ -63,16 +68,17 @@ public class VehicleService {
         currentVehicle.setYear(body.year());
         currentVehicle.setImageUrl(body.imageUrl());
         this.vehicleDAO.save(currentVehicle);
-        return new VehicleDTO(currentVehicle.getPlate(),currentVehicle.getBrand(), currentVehicle.getModel(), currentVehicle.getType(), currentVehicle.getFuelType(), currentVehicle.getYear(), currentVehicle.getImageUrl());
+        return new VehicleDTO(currentVehicle.getPlate(), currentVehicle.getFuelType(),currentVehicle.getBrand(), currentVehicle.getModel(), currentVehicle.getType(), currentVehicle.getYear(), currentVehicle.getImageUrl());
     }
+
     public VehicleDTO findByPlateAndUpdateImage(String plate, VehicleImageDTO imageUrl) {
         Vehicle currentVehicle = this.vehicleDAO.findByPlate(plate).orElseThrow(() -> new NotFoundException("Veicolo non trovato"));
         currentVehicle.setImageUrl(imageUrl.imageUrl());
         this.vehicleDAO.save(currentVehicle);
-        return new VehicleDTO(currentVehicle.getPlate(), currentVehicle.getBrand(), currentVehicle.getModel(), currentVehicle.getType(), currentVehicle.getFuelType(), currentVehicle.getYear(), currentVehicle.getImageUrl());
+        return new VehicleDTO(currentVehicle.getPlate(),currentVehicle.getFuelType(), currentVehicle.getBrand(), currentVehicle.getModel(), currentVehicle.getType(),  currentVehicle.getYear(), currentVehicle.getImageUrl());
     }
 
-    public void updateAllVehicles() {
+    public ResponseMessageDTO updateAllVehicles() {
         List<Vehicle> vehicles = this.vehicleDAO.findAll();
         Iterator<Vehicle> vehicleIterator = vehicles.iterator();
         while (vehicleIterator.hasNext()) {
@@ -89,10 +95,17 @@ public class VehicleService {
                 }
             }
         }
+        return new ResponseMessageDTO("Stato dei veicoli aggiornato con successo");
     }
 
     public VehicleRespDTO rentCar(String plate) {
         Vehicle currentVehicle = this.vehicleDAO.findByPlate(plate).orElseThrow(() -> new NotFoundException("Veicolo non trovato"));
+        if(currentVehicle.getState().equals(State.SOLD)){
+            throw new BadRequestException("Il veicolo è stato venduto");
+        }
+        if(currentVehicle.getState().equals(State.RENTED)){
+            throw new BadRequestException("Il veicolo è già noleggiato");
+        }
         currentVehicle.setState("NOLEGGIATA");
         this.vehicleDAO.save(currentVehicle);
         return new VehicleRespDTO(currentVehicle.getPlate(), currentVehicle.getBrand(), currentVehicle.getModel(), currentVehicle.getType(), currentVehicle.getFuelType(), currentVehicle.getYear(),currentVehicle.getState().toString(), currentVehicle.getImageUrl());
@@ -100,8 +113,27 @@ public class VehicleService {
 
     public VehicleRespDTO returnCar(String plate) {
         Vehicle currentVehicle = this.vehicleDAO.findByPlate(plate).orElseThrow(() -> new NotFoundException("Veicolo non trovato"));
+        if (currentVehicle.getState().equals(State.AVAILABLE)) {
+            throw new BadRequestException("Veicolo già disponibile");
+        }
+        if (currentVehicle.getState().equals(State.SOLD)) {
+            throw new BadRequestException("Il veicolo è stato venduto");
+        }
         currentVehicle.setState("DISPONIBILE");
         this.vehicleDAO.save(currentVehicle);
         return new VehicleRespDTO(currentVehicle.getPlate(), currentVehicle.getBrand(), currentVehicle.getModel(), currentVehicle.getType(), currentVehicle.getFuelType(), currentVehicle.getYear(),currentVehicle.getState().toString(), currentVehicle.getImageUrl());
+    }
+
+    public VehicleRespDTO sellCar(String vehicle) {
+        Vehicle currentVehicle = this.vehicleDAO.findByPlate(vehicle).orElseThrow(() -> new NotFoundException("Veicolo non trovato"));
+        if(currentVehicle.getState().equals(State.RENTED)){
+            throw new BadRequestException("Veicolo in noleggio");
+        }
+        if(currentVehicle.getState().equals(State.SOLD)){
+            throw new BadRequestException("Veicolo già venduto");
+        }
+        currentVehicle.setState("VENDUTA");
+        this.vehicleDAO.save(currentVehicle);
+        return new VehicleRespDTO(currentVehicle.getPlate(), currentVehicle.getBrand(), currentVehicle.getModel(), currentVehicle.getType(), currentVehicle.getFuelType(), currentVehicle.getYear(), currentVehicle.getState().toString(), currentVehicle.getImageUrl());
     }
 }

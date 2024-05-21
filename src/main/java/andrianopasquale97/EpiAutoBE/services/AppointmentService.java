@@ -7,7 +7,9 @@ import andrianopasquale97.EpiAutoBE.entities.enums.State;
 import andrianopasquale97.EpiAutoBE.exceptions.BadRequestException;
 import andrianopasquale97.EpiAutoBE.exceptions.NotFoundException;
 import andrianopasquale97.EpiAutoBE.payloads.AppointmentDTO;
+import andrianopasquale97.EpiAutoBE.payloads.AppointmentPayloadDTO;
 import andrianopasquale97.EpiAutoBE.payloads.AppointmentRespDTO;
+import andrianopasquale97.EpiAutoBE.payloads.ResponseMessageDTO;
 import andrianopasquale97.EpiAutoBE.repositories.AppointmentDAO;
 import andrianopasquale97.EpiAutoBE.repositories.UserDAO;
 import andrianopasquale97.EpiAutoBE.repositories.VehicleDAO;
@@ -44,12 +46,12 @@ public class AppointmentService {
         List<Appointment> appointmentList = appointments.getContent();
         List<AppointmentRespDTO> appointmentRespDTOS = new ArrayList<>();
         for (Appointment a : appointmentList) {
-            appointmentRespDTOS.add(new AppointmentRespDTO(Integer.toString(a.getId()), a.getDate().toString(), Integer.toString(a.getHour()), a.getVehicle().getPlate()));
+            appointmentRespDTOS.add(new AppointmentRespDTO(Integer.toString(a.getId()), a.getDate().toString(), Integer.toString(a.getHour()), a.getVehicle().getPlate(), a.getUser().getName(),a.getUser().getSurname(), a.getUser().getEmail()));
         }
         return appointmentRespDTOS;
     }
 
-    public AppointmentRespDTO save (int userId,String plate,AppointmentDTO appointment) {
+    public Appointment show (int userId,String plate,AppointmentDTO appointment) {
         User user = userDAO.findById(userId).orElseThrow(() -> new NotFoundException("Utente non trovato"));
         Vehicle vehicle = vehicleDAO.findByPlate(plate).orElseThrow(() -> new NotFoundException("Veicolo non trovato"));
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
@@ -76,23 +78,30 @@ public class AppointmentService {
             }
         }
         Appointment newAppointment = new Appointment(LocalDate.parse(appointment.date(),formatter),Integer.parseInt(appointment.hour()), vehicle, user);
+
+        return newAppointment;
+    }
+
+    public AppointmentRespDTO save(int userId, AppointmentPayloadDTO appointment){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate date = LocalDate.parse(appointment.date(), formatter);
+        int hour =Integer.parseInt(appointment.hour());
+        User user = userDAO.findById(userId).orElseThrow(() -> new NotFoundException("Utente non trovato"));
+        Vehicle vehicle = vehicleDAO.findByPlate(appointment.vehicle()).orElseThrow(() -> new NotFoundException("Veicolo non trovato"));
+        Appointment newAppointment= new Appointment(date, hour, vehicle, user);
         this.appointmentDAO.save(newAppointment);
-        return new AppointmentRespDTO(Integer.toString(newAppointment.getId()), newAppointment.getDate().toString(),Integer.toString(newAppointment.getHour()), newAppointment.getVehicle().getPlate());
+        return new AppointmentRespDTO(Integer.toString(newAppointment.getId()), newAppointment.getDate().toString(), Integer.toString(newAppointment.getHour()), newAppointment.getVehicle().getPlate(), newAppointment.getUser().getName(), newAppointment.getUser().getSurname(), newAppointment.getUser().getEmail());
     }
 
     public AppointmentRespDTO findAppointmentById(int appointmentId) {
         Appointment appointment = appointmentDAO.findById(appointmentId).orElseThrow(() -> new NotFoundException("Appuntamento non trovato"));
-        return new AppointmentRespDTO(Integer.toString(appointment.getId()), appointment.getDate().toString(), Integer.toString(appointment.getHour()), appointment.getVehicle().getPlate());
+        return new AppointmentRespDTO(Integer.toString(appointment.getId()), appointment.getDate().toString(), Integer.toString(appointment.getHour()), appointment.getVehicle().getPlate(), appointment.getUser().getName(), appointment.getUser().getSurname(), appointment.getUser().getEmail());
     }
 
-    public List<AppointmentRespDTO> findAppointmentsByUserId(int userId) {
+    public List<Appointment> findAppointmentsByUserId(int userId) {
         User user = userDAO.findById(userId).orElseThrow(() -> new NotFoundException("Utente non trovato"));
-        List<Appointment> appointments = appointmentDAO.findAppointmentsByUserId(user.getId());
-        List<AppointmentRespDTO> appointmentRespDTOS = new ArrayList<>();
-        for (Appointment a : appointments) {
-            appointmentRespDTOS.add(new AppointmentRespDTO(Integer.toString(a.getId()), a.getDate().toString(), Integer.toString(a.getHour()), a.getVehicle().getPlate()));
-        }
-        return appointmentRespDTOS;
+
+        return appointmentDAO.findAppointmentsByUserId(user.getId());
     }
 
     public List<AppointmentRespDTO> findAppointmentsByUserEmail(String email) {
@@ -100,7 +109,7 @@ public class AppointmentService {
         List<Appointment> appointments = appointmentDAO.findAppointmentsByUserId(user.getId());
         List<AppointmentRespDTO> appointmentRespDTOS = new ArrayList<>();
         for (Appointment a : appointments) {
-            appointmentRespDTOS.add(new AppointmentRespDTO(Integer.toString(a.getId()), a.getDate().toString(), Integer.toString(a.getHour()), a.getVehicle().getPlate()));
+            appointmentRespDTOS.add(new AppointmentRespDTO(Integer.toString(a.getId()), a.getDate().toString(), Integer.toString(a.getHour()), a.getVehicle().getPlate(), a.getUser().getName(), a.getUser().getSurname(), a.getUser().getEmail()));
         }
         return appointmentRespDTOS;
     }
@@ -127,17 +136,17 @@ public class AppointmentService {
                 }
                 a.setHour(parseInt(appointment.hour()));
                 appointmentDAO.save(a);
-                response = new AppointmentRespDTO(Integer.toString(a.getId()), a.getDate().toString(), Integer.toString(a.getHour()), a.getVehicle().getPlate());
+                response = new AppointmentRespDTO(Integer.toString(a.getId()), a.getDate().toString(), Integer.toString(a.getHour()), a.getVehicle().getPlate(), a.getUser().getName(), a.getUser().getSurname(), a.getUser().getEmail());
             }
         }
         return response;
     }
 
-    public String deleteAppointmentByUserId(int userId, int appointmentId) {
+    public ResponseMessageDTO deleteAppointmentByUserId(int userId, int appointmentId) {
         Appointment appointment = appointmentDAO.findById(appointmentId).orElseThrow(() -> new NotFoundException("Prenotazione non trovata"));
         if (appointment.getUser().getId() == userId) {
             appointmentDAO.deleteById(appointmentId);
-            return "Prenotazione eliminata";
+            return new ResponseMessageDTO( "Prenotazione eliminata");
         }
         throw new BadRequestException("Non sei autorizzato a cancellare questa prenotazione");
     }
@@ -150,7 +159,7 @@ public class AppointmentService {
             throw new NotFoundException("Non ci sono prenotazioni per questa data");
         }
         for (Appointment a : appointments) {
-            appointmentRespDTOS.add(new AppointmentRespDTO(Integer.toString(a.getId()), a.getDate().toString(), Integer.toString(a.getHour()), a.getVehicle().getPlate()));
+            appointmentRespDTOS.add(new AppointmentRespDTO(Integer.toString(a.getId()), a.getDate().toString(), Integer.toString(a.getHour()), a.getVehicle().getPlate(), a.getUser().getName(), a.getUser().getSurname(), a.getUser().getEmail()));
         }
         return appointmentRespDTOS;
     }
@@ -162,7 +171,7 @@ public class AppointmentService {
             throw new NotFoundException("Non ci sono prenotazioni per oggi");
         }
         for (Appointment a : appointments) {
-            appointmentRespDTOS.add(new AppointmentRespDTO(Integer.toString(a.getId()), a.getDate().toString(), Integer.toString(a.getHour()), a.getVehicle().getPlate()));
+            appointmentRespDTOS.add(new AppointmentRespDTO(Integer.toString(a.getId()), a.getDate().toString(), Integer.toString(a.getHour()), a.getVehicle().getPlate(), a.getUser().getName(), a.getUser().getSurname(), a.getUser().getEmail()));
         }
         return appointmentRespDTOS;
     }

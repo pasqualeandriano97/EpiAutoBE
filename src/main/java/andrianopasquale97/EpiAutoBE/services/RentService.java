@@ -7,9 +7,7 @@ import andrianopasquale97.EpiAutoBE.entities.Vehicle;
 import andrianopasquale97.EpiAutoBE.entities.enums.State;
 import andrianopasquale97.EpiAutoBE.exceptions.BadRequestException;
 import andrianopasquale97.EpiAutoBE.exceptions.NotFoundException;
-import andrianopasquale97.EpiAutoBE.payloads.RentDTO;
-import andrianopasquale97.EpiAutoBE.payloads.RentPostDTO;
-import andrianopasquale97.EpiAutoBE.payloads.RentRespDTO;
+import andrianopasquale97.EpiAutoBE.payloads.*;
 import andrianopasquale97.EpiAutoBE.repositories.MaintenanceDAO;
 import andrianopasquale97.EpiAutoBE.repositories.RentDAO;
 import andrianopasquale97.EpiAutoBE.repositories.UserDAO;
@@ -42,7 +40,7 @@ public class RentService {
     @Autowired
     private MaintenanceDAO maintenanceDAO;
 
-    public RentRespDTO save(int id, String plate, RentDTO rent) throws ParseException {
+    public Rent show(int id, String plate, RentDTO rent) throws ParseException {
         List<Rent> rents = rentDAO.findByVehicle(plate);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         LocalDate date = LocalDate.parse(rent.date(), formatter);
@@ -51,10 +49,13 @@ public class RentService {
         if (!rents.isEmpty()) {
             for (Rent r : rents) {
                 LocalDate startDate = r.getStartDate();
-                System.out.println(startDate);
                 LocalDate endDate = r.getEndDate();
                 LocalDate newRentdate =LocalDate.parse( rent.startDate(),formatter);
-                if (newRentdate.isAfter(startDate) && newRentdate.isBefore(endDate)) {
+                LocalDate newRentdate2 = LocalDate.parse(rent.endDate(), formatter);
+                if ((newRentdate.isAfter(startDate)|| newRentdate.isEqual(startDate)) && (newRentdate.isBefore(endDate)|| newRentdate.isEqual(endDate))) {
+                    throw new BadRequestException("Il veicolo è già in uso");
+                }
+                if ((newRentdate2.isAfter(startDate)|| newRentdate2.isEqual(startDate)) && (newRentdate2.isBefore(endDate)|| newRentdate2.isEqual(endDate))) {
                     throw new BadRequestException("Il veicolo è già in uso");
                 }
             }
@@ -88,14 +89,26 @@ public class RentService {
             throw new BadRequestException("La data di fine del noleggio non può essere precedente alla data dell'appuntamento");
         }
         int time= parseInt(rent.startHour());
-        Rent newRent = new Rent(LocalDate.parse(rent.startDate(), formatter), LocalDate.parse(rent.endDate(), formatter), LocalDate.parse(rent.date(), formatter), time, vehicle, user);
-        rentDAO.save(newRent);
-        return new RentRespDTO(newRent.getId(),rent.startDate(),rent.endDate(),rent.date(),rent.startHour(),vehicle.getBrand(),vehicle.getModel(),vehicle.getYear());
+        return new Rent(LocalDate.parse(rent.startDate(), formatter), LocalDate.parse(rent.endDate(), formatter), LocalDate.parse(rent.date(), formatter), time, vehicle, user);
+    }
+
+
+    public RentRespDTO save(int userId,RentPayloadDTO rent){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        User user = userDAO.findById(userId).orElseThrow(() -> new NotFoundException("Utente non trovato"));
+        Vehicle vehicle = vehicleDAO.findById(rent.vehicle()).orElseThrow(() -> new NotFoundException("Veicolo non trovato"));
+        LocalDate startDate = LocalDate.parse(rent.startDate(),formatter);
+        LocalDate endDate = LocalDate.parse(rent.endDate(),formatter);
+        LocalDate date = LocalDate.parse(rent.date(),formatter);
+        Rent newrent = new Rent(startDate, endDate, date,Integer.parseInt(rent.time()), vehicle, user);
+        rentDAO.save(newrent);
+        return new RentRespDTO(newrent.getId(),rent.startDate(),rent.endDate(),rent.date(),rent.time(),vehicle.getBrand(),vehicle.getModel(),vehicle.getYear());
+
     }
 
     public Page<Rent> getAllRents(int page, int size, String sortBy) {
         if(size > 100) size = 100;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        Pageable pageable = PageRequest.of(page, size,Sort.by("startDate").descending());
         return rentDAO.findAll(pageable);
     }
 
@@ -111,7 +124,15 @@ public class RentService {
     }
 
     public List<Rent> getActiveRentsToday() {
-        return this.rentDAO.findActiveRentsToday();
+        List<Rent> rents=this.rentDAO.findActiveRentsToday();
+        if (rents.isEmpty()) {
+            throw new NotFoundException("Nessun noleggio attivo per oggi");
+        }
+        return rents;
+    }
+
+    public Rent findbyRentId(int rentId) {
+        return rentDAO.findById(rentId).orElseThrow(() -> new NotFoundException("Noleggio non trovato"));
     }
 
     public RentRespDTO findbyRentIdandUpdate(int userId,int rentId, RentPostDTO rent){
@@ -120,11 +141,12 @@ public class RentService {
         if (!vehicle.getState().equals(State.AVAILABLE)) {
             throw new BadRequestException("Il veicolo non è disponibile");
         }
-        if(rentToUpdate.getId() != userId) {
+        if(rentToUpdate.getUser().getId() != userId) {
             throw new BadRequestException("Non sei autorizzato a modificare questo noleggio");}
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         if (rentToUpdate.getEndDate().isBefore(LocalDate.parse(rent.postDate(), formatter))) {
             rentToUpdate.setEndDate(LocalDate.parse(rent.postDate(), formatter));
+            rentToUpdate.setPrice(rentToUpdate.calculatePrice());
             this.rentDAO.save(rentToUpdate);
         }else{
             throw new BadRequestException("La data di posticipazione fine noleggio non può essere precedente alla data di fine noleggio da modificare");
@@ -137,15 +159,15 @@ public class RentService {
         return rentDAO.findUpcomingRentsByUserId(user.getId());
     }
 
-    public String dismissRentByUserId(int userId, int rentId) {
-       List<Rent> rents = this.getUpcomingRentsByUserId(userId);
+    public ResponseMessageDTO dismissRentByUserId(int userId, int rentId) {
+       List<Rent> rents =this.rentDAO.findByUserId(userId);
         for (Rent rent : rents) {
             if (rent.getId() == rentId ) {
-                if(rent.getStartDate().isBefore(LocalDate.now())){
+                if(rent.getStartDate().isBefore(LocalDate.now())|| rent.getStartDate().equals(LocalDate.now())) {
                 throw new BadRequestException("Non puoi eliminare un noleggio in corso");
             }
                 this.rentDAO.delete(rent);
-                return "Noleggio eliminato";
+                return new ResponseMessageDTO("Noleggio eliminato") ;
             }
 
         }

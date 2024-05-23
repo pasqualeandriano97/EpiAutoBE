@@ -30,6 +30,16 @@ public class VehicleController {
     public Vehicle getVehicleByPlate(@RequestParam String plate) {
         return vehicleService.findByPlate(plate);
     }
+    @GetMapping("/name")
+    @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
+    public Page<Vehicle> getVehicleByName(@RequestParam String brand,
+                                    @RequestParam String model,
+                                    @RequestParam (defaultValue = "0")int page,
+                                    @RequestParam(defaultValue = "20")int size,
+                                    @RequestParam(defaultValue = "plate") String sortBy) {
+        return vehicleService.findByBrandAndModel(brand, model, page, size, sortBy);
+    }
+
 
     @PostMapping("")
     @PreAuthorize("hasAuthority('ADMIN')")

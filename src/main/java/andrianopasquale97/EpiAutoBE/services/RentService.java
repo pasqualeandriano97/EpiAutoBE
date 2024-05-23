@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Integer.parseInt;
@@ -135,6 +136,26 @@ public class RentService {
         return rentDAO.findById(rentId).orElseThrow(() -> new NotFoundException("Noleggio non trovato"));
     }
 
+    public List<Rent> findRentByDate(String date){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate date1 = LocalDate.parse(date, formatter);
+       List<Rent> rents = this.rentDAO.findByDateBetweenStartAndEndDate(date1);
+        if (rents.isEmpty()) {
+            throw new NotFoundException("Nessun noleggio trovato");
+        }
+
+        return rents;
+    }
+
+    public List<Rent> findRentByUser (String email) {
+        User user = userDAO.findByEmail(email).orElseThrow(() -> new NotFoundException("Utente non trovato"));
+        List<Rent> rents = this.rentDAO.findByUser(user);
+        if (rents.isEmpty()) {
+            throw new NotFoundException("Nessun noleggio trovato");
+        }
+        return rents;
+    }
+
     public RentRespDTO findbyRentIdandUpdate(int userId,int rentId, RentPostDTO rent){
         Rent rentToUpdate = rentDAO.findById(rentId).orElseThrow(() -> new NotFoundException("Noleggio non trovato"));
         Vehicle vehicle = rentToUpdate.getVehicle();
@@ -173,4 +194,17 @@ public class RentService {
         }
         throw new NotFoundException("Noleggio con id: " + rentId + " non trovato");
     }
+
+    public ResponseMessageDTO dismissRentByRentId(int rentId) {
+        this.findbyRentId(rentId);
+        this.rentDAO.deleteById(rentId);
+        return new ResponseMessageDTO("Noleggio eliminato");
+    }
+
+    public Rent show1(String email, String plate,RentDTO rent) throws ParseException {
+        User user = userDAO.findByEmail(email).orElseThrow(() -> new NotFoundException("Utente non trovato"));
+       return this.show(user.getId(), plate, rent);
+    }
+
+
 }

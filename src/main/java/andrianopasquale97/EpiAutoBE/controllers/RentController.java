@@ -54,6 +54,18 @@ public class RentController {
         return this.rentService.getActiveRentsToday();
     }
 
+    @GetMapping("/date")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public List<Rent> getRentByVehicleActiveOnDate(@RequestParam String date) throws ParseException {
+        return this.rentService.findRentByDate(date);
+    }
+
+    @GetMapping("/user")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public List<Rent> getRentByUser(@RequestParam String email) {
+        return this.rentService.findRentByUser(email);
+    }
+
     @PatchMapping("/post")
     public RentRespDTO postRent(@AuthenticationPrincipal User user,@RequestParam int rentId,@Validated @RequestBody RentPostDTO date,BindingResult validation) {
         if (validation.hasErrors()) {
@@ -64,6 +76,13 @@ public class RentController {
     @DeleteMapping("/me")
     public ResponseMessageDTO deleteMyRents(@AuthenticationPrincipal User user, @RequestParam int rentId) {
         return this.rentService.dismissRentByUserId(user.getId(), rentId);
+    }
+
+
+    @DeleteMapping("/{rentId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseMessageDTO deleteRent( @PathVariable int rentId) {
+        return this.rentService.dismissRentByRentId( rentId);
     }
 
     @PostMapping("")
@@ -77,5 +96,19 @@ public class RentController {
     @PostMapping("/save")
     public RentRespDTO saveRent(@AuthenticationPrincipal User user,@RequestBody RentPayloadDTO rent) {
         return this.rentService.save(user.getId(),rent);
+    }
+    @PostMapping("/admin")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public Rent showRentAdmin(@RequestParam String email,@RequestParam String plate, @Validated @RequestBody RentDTO rent, BindingResult validation) throws ParseException {
+        if (validation.hasErrors()) {
+            throw new BadRequestException(validation.getAllErrors());
+        }
+        return this.rentService.show1(email, plate,rent);
+    }
+
+    @PostMapping("/save/admin")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public RentRespDTO saveRentAdmin(@RequestParam int id,@RequestBody RentPayloadDTO rent) {
+        return this.rentService.save(id,rent);
     }
 }

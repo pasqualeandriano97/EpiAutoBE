@@ -8,10 +8,7 @@ import andrianopasquale97.EpiAutoBE.exceptions.NotFoundException;
 import andrianopasquale97.EpiAutoBE.payloads.*;
 import andrianopasquale97.EpiAutoBE.repositories.VehicleDAO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 
@@ -40,6 +37,27 @@ public class VehicleService {
 
     public Vehicle findByPlate(String plate) {
         return this.vehicleDAO.findByPlate(plate).orElseThrow(() -> new NotFoundException("Veicolo non trovato"));
+    }
+
+    public Page<Vehicle> findByBrandAndModel(String brand, String model,int page,int size, String sortBy) {
+        Pageable pageable=(PageRequest.of(page, size, Sort.by(sortBy)));
+
+        List<Vehicle> vehicles = this.vehicleDAO.findByBrand(brand);
+        List<Vehicle> filteredVehicles = new ArrayList<>();
+        if (!model.isEmpty()) {
+            for (Vehicle vehicle : vehicles) {
+                if (vehicle.getModel().equalsIgnoreCase(model)) {
+                    filteredVehicles.add(vehicle);
+                }
+            }
+        } else {
+            filteredVehicles = vehicles;
+        }
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), filteredVehicles.size());
+        List<Vehicle> pagedVehicles = new ArrayList<>(filteredVehicles.subList(start, end));
+
+        return new PageImpl<>(pagedVehicles, pageable, filteredVehicles.size());
     }
 
     public Vehicle save(VehicleDTO body) {

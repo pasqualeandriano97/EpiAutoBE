@@ -68,7 +68,7 @@ public class UserController {
 
    @DeleteMapping("/me")
    @PreAuthorize("hasAuthority('USER')")
-   @ResponseStatus(HttpStatus.NO_CONTENT)
+  
     public ResponseMessageDTO deleteCurrentUser(@AuthenticationPrincipal User currentUser) {
        return userService.findByIdAndDelete(currentUser.getId());
    }

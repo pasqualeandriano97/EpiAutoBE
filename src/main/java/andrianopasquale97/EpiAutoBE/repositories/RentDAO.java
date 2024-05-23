@@ -27,4 +27,8 @@ public interface RentDAO extends JpaRepository<Rent, Integer> {
     List<Rent> findUpcomingRentsByUserId(@Param("userId") int userId);
     @Query("SELECT r FROM Rent r WHERE r.date = :date")
     List<Rent> findRentsByDate(@Param("date") LocalDate date);
+    @Query("SELECT r FROM Rent r WHERE :date BETWEEN r.startDate AND r.endDate")
+    List<Rent> findByDateBetweenStartAndEndDate(@Param("date") LocalDate date);
+
+    List<Rent> findByUser(User user);
 }

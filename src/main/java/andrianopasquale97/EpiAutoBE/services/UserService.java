@@ -66,8 +66,7 @@ public class UserService {
 
 
     public ResponseMessageDTO findByIdAndDelete(int id) {
-        User user = this.userDAO.findById(id).orElseThrow(() -> new NotFoundException("Utente non trovato"));
-        this.userDAO.delete(user);
+       this.userDAO.deleteUserWithRelations(id);
         return new ResponseMessageDTO("Utente eliminato con successo") ;
     }
 }

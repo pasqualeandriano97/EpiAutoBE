@@ -1,7 +1,7 @@
 README
 
 Web App per il Gestionale di un Concessionario di Noleggio e Vendita Auto.
-Benvenuto nel progetto della nostra Web App per il gestionale di un concessionario di noleggio e vendita auto.
+Benvenuto nel progetto della mia Web App per il gestionale di un concessionario di noleggio e vendita auto.
 Questa applicazione è stata progettata per offrire agli utenti la comodità di prenotare un noleggio o fissare un appuntamento per l'acquisto di un'auto direttamente da casa o in sede con l'aiuto di un oparatore.
 
 Funzionalità Principali

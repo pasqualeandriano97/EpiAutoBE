@@ -46,7 +46,7 @@ https://github.com/pasqualeandriano97/EpiAutoAdminFE
 --------------------------
 
 Backend
-Tecnologie: Java Spring Maven
+Tecnologie: Java Spring Maven.
 Funzionalità: API RESTful per la gestione delle prenotazioni, degli appuntamenti e delle auto.
 
 Database

@@ -79,6 +79,24 @@ public class AppointmentController {
         }
         return appointmentService.show(user.getId(),plate, appointment);
     }
+
+    @PostMapping("/admin")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public Appointment createAppointmentByAdmin(@RequestParam String email,
+                                                @RequestParam String plate,
+                                                @Validated @RequestBody AppointmentDTO appointment, BindingResult validation) {
+        if (validation.hasErrors()) {
+            throw new BadRequestException(validation.getAllErrors());
+        }
+        return appointmentService.show1(email, plate, appointment);
+    }
+
+    @PostMapping("/admin/save")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public AppointmentRespDTO saveAppointmentByAdmin(@RequestParam int userId, @RequestBody AppointmentPayloadDTO appointmentPayload) {
+        return appointmentService.save(userId, appointmentPayload);
+    }
+
     @PostMapping("/me/save")
     public AppointmentRespDTO saveAppointment(@AuthenticationPrincipal User user, @RequestBody AppointmentPayloadDTO appointmentPayload){
         return appointmentService.save(user.getId(), appointmentPayload);

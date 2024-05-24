@@ -175,4 +175,9 @@ public class AppointmentService {
         }
         return appointmentRespDTOS;
     }
+
+    public Appointment show1 (String email,String plate,AppointmentDTO appointment) {
+        User user = userDAO.findByEmail(email).orElseThrow(() -> new NotFoundException("Utente non trovato"));
+        return this.show(user.getId(),plate, appointment);
+    }
 }

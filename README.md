@@ -35,7 +35,9 @@ Frontend
 Tecnologie: React.js, HTML, CSS, JavaScript,Bootstrap
 Funzionalità: Interfaccia utente per la prenotazione di noleggi e appuntamenti, visualizzazione del parco auto,lista di noleggi e appuntamenti.
 
---------ATTENZIONE--------
+-------------------------
+
+ATTENZIONE!!
 
 Allego i link per le repository dei due Front-End dell'applicazione
 

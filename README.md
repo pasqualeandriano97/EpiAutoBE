@@ -1,6 +1,6 @@
 README
 
-Web App per il Gestionale di un Concessionario di Noleggio e Vendita Auto
+Web App per il Gestionale di un Concessionario di Noleggio e Vendita Auto.
 Benvenuto nel progetto della nostra Web App per il gestionale di un concessionario di noleggio e vendita auto.
 Questa applicazione è stata progettata per offrire agli utenti la comodità di prenotare un noleggio o fissare un appuntamento per l'acquisto di un'auto direttamente da casa o in sede con l'aiuto di un oparatore.
 
@@ -29,7 +29,9 @@ Visualizzazione delle prenotazioni e degli appuntamenti effettuati dagli utenti.
 Aggiornamento dello stato delle prenotazioni e degli appuntamenti.
 
 Struttura del Progetto
+
 Frontend
+
 Tecnologie: React.js, HTML, CSS, JavaScript,Bootstrap
 Funzionalità: Interfaccia utente per la prenotazione di noleggi e appuntamenti, visualizzazione del parco auto,lista di noleggi e appuntamenti.
 
@@ -46,11 +48,15 @@ https://github.com/pasqualeandriano97/EpiAutoAdminFE
 --------------------------
 
 Backend
+
 Tecnologie: Java Spring Maven.
+
 Funzionalità: API RESTful per la gestione delle prenotazioni, degli appuntamenti e delle auto.
 
 Database
+
 Tecnologie: SQL,JPQL
+
 Funzionalità: Archiviazione delle informazioni sugli utenti, sulle auto, sui noleggi e sugli appuntamenti.
 
 Contatti

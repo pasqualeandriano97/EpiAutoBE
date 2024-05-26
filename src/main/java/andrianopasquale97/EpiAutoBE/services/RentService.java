@@ -190,7 +190,7 @@ public class RentService {
        List<Rent> rents =this.rentDAO.findByUserId(userId);
         for (Rent rent : rents) {
             if (rent.getId() == rentId ) {
-                if(rent.getStartDate().isBefore(LocalDate.now())|| rent.getStartDate().equals(LocalDate.now())) {
+                if((rent.getStartDate().isBefore(LocalDate.now())|| rent.getStartDate().equals(LocalDate.now())&&(rent.getEndDate().isAfter(LocalDate.now())|| rent.getEndDate().equals(LocalDate.now())))) {
                 throw new BadRequestException("Non puoi eliminare un noleggio in corso");
             }
                 this.rentDAO.delete(rent);

@@ -89,6 +89,12 @@ public class RentService {
         if(LocalDate.parse(rent.date(), formatter).isAfter(LocalDate.parse(rent.endDate(), formatter))) {
             throw new BadRequestException("La data di fine del noleggio non può essere precedente alla data dell'appuntamento");
         }
+        if(LocalDate.parse(rent.startDate(), formatter).isBefore(LocalDate.now())|| LocalDate.parse(rent.endDate(), formatter).isBefore(LocalDate.now())) {
+            throw new BadRequestException("La data di inizio o fine del noleggio non può essere precedente alla data odierna");
+        }
+        if(LocalDate.parse(rent.startDate(), formatter).isEqual(LocalDate.now())|| LocalDate.parse(rent.endDate(), formatter).isEqual(LocalDate.now())) {
+            throw new BadRequestException("La data di inizio del noleggio non può essere uguale alla data odierna");
+        }
         int time= parseInt(rent.startHour());
         return new Rent(LocalDate.parse(rent.startDate(), formatter), LocalDate.parse(rent.endDate(), formatter), LocalDate.parse(rent.date(), formatter), time, vehicle, user);
     }

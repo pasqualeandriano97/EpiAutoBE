@@ -77,6 +77,7 @@ public class AppointmentService {
                 }
             }
         }
+
         Appointment newAppointment = new Appointment(LocalDate.parse(appointment.date(),formatter),Integer.parseInt(appointment.hour()), vehicle, user);
 
         return newAppointment;

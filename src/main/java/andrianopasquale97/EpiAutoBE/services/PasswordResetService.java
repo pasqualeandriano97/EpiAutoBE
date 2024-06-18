@@ -27,7 +27,9 @@ public class PasswordResetService {
         PasswordResetToken resetToken = tokenRepository.findById(token).orElseThrow(()->new NotFoundException("Il token non è stato trovato"));
 
         if (resetToken == null || resetToken.isExpired()) {
+            tokenRepository.delete(resetToken);
             throw new BadRequestException("Il token è scaduto");
+
         }
 
         User user = resetToken.getUser();

@@ -83,6 +83,9 @@ public class RentService {
         if (LocalDate.parse(rent.date(),formatter).isAfter(LocalDate.parse(rent.startDate(), formatter))) {
             throw new BadRequestException("La data dell'appuntamento non può essere successiva alla data di inizio del noleggio");
         }
+        if ((LocalDate.parse(rent.date(),formatter).isEqual(LocalDate.now()))||(LocalDate.parse(rent.date(),formatter).isBefore(LocalDate.now()))) {
+            throw new BadRequestException("La data dell'appuntamento non può essere uguale o precedente alla data attuale");
+        }
         if(LocalDate.parse(rent.startDate(),formatter).isAfter(LocalDate.parse(rent.endDate(), formatter))) {
             throw new BadRequestException("La data di fine del noleggio non può essere precedente alla data di inizio del noleggio");
         }
@@ -94,6 +97,12 @@ public class RentService {
         }
         if(LocalDate.parse(rent.startDate(), formatter).isEqual(LocalDate.now())|| LocalDate.parse(rent.endDate(), formatter).isEqual(LocalDate.now())) {
             throw new BadRequestException("La data di inizio del noleggio non può essere uguale alla data odierna");
+        }
+        if (LocalDate.parse(rent.startDate(), formatter).isEqual(LocalDate.parse(rent.endDate(), formatter))) {
+            throw new BadRequestException("La data di inizio del noleggio non può essere uguale alla data di fine del noleggio");
+        }
+        if ((LocalDate.parse(rent.startDate(), formatter).isBefore(LocalDate.parse(rent.date(), formatter)))||(LocalDate.parse(rent.startDate(), formatter).isEqual(LocalDate.parse(rent.date(), formatter)))) {
+            throw new BadRequestException("La data di inizio del noleggio non può essere precedente o uguale alla data dell'appuntamento");
         }
         int time= parseInt(rent.startHour());
         return new Rent(LocalDate.parse(rent.startDate(), formatter), LocalDate.parse(rent.endDate(), formatter), LocalDate.parse(rent.date(), formatter), time, vehicle, user);
@@ -190,7 +199,7 @@ public class RentService {
        List<Rent> rents =this.rentDAO.findByUserId(userId);
         for (Rent rent : rents) {
             if (rent.getId() == rentId ) {
-                if(rent.getStartDate().isBefore(LocalDate.now())|| rent.getStartDate().equals(LocalDate.now())) {
+                if((rent.getStartDate().isBefore(LocalDate.now())|| rent.getStartDate().equals(LocalDate.now()))&&(rent.getEndDate().isAfter(LocalDate.now())|| rent.getEndDate().equals(LocalDate.now()))) {
                 throw new BadRequestException("Non puoi eliminare un noleggio in corso");
             }
                 this.rentDAO.delete(rent);

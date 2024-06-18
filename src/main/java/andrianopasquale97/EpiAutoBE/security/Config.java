@@ -38,7 +38,7 @@ public class Config {
     CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "https://mywonderfulfrontend.com","http://localhost:5174","https://nutri-bal.vercel.app"));
+        config.setAllowedOrigins(Arrays.asList("http://localhost:5173","http://localhost:5174","https://epi-auto-fe.vercel.app/","https://epi-auto-admin-fe.vercel.app/"));
         config.setAllowedMethods(Arrays.asList("*"));
         config.setAllowedHeaders(Arrays.asList("*"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

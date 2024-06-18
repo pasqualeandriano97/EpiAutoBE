@@ -1,5 +1,6 @@
 package andrianopasquale97.EpiAutoBE.services;
 
+import andrianopasquale97.EpiAutoBE.entities.PasswordResetToken;
 import andrianopasquale97.EpiAutoBE.entities.User;
 import andrianopasquale97.EpiAutoBE.exceptions.BadRequestException;
 import andrianopasquale97.EpiAutoBE.exceptions.NotFoundException;
@@ -7,6 +8,7 @@ import andrianopasquale97.EpiAutoBE.payloads.ResponseMessageDTO;
 import andrianopasquale97.EpiAutoBE.payloads.UserDTO;
 import andrianopasquale97.EpiAutoBE.payloads.UserRespDTO;
 import andrianopasquale97.EpiAutoBE.payloads.UserUpdateDTO;
+import andrianopasquale97.EpiAutoBE.repositories.PasswordResetTokenDAO;
 import andrianopasquale97.EpiAutoBE.repositories.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,12 +18,16 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class UserService {
     @Autowired
     private UserDAO userDAO;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    PasswordResetTokenDAO tokenDTO;
 
     public UserRespDTO save (UserDTO user) {
         if (userDAO.existsByEmail(user.email())) {
@@ -68,5 +74,16 @@ public class UserService {
     public ResponseMessageDTO findByIdAndDelete(int id) {
        this.userDAO.deleteUserWithRelations(id);
         return new ResponseMessageDTO("Utente eliminato con successo") ;
+    }
+
+    public UUID createPasswordResetTokenForUser(User user) {
+        PasswordResetToken myToken = new PasswordResetToken(user);
+        tokenDTO.save(myToken);
+        return myToken.getId();
+    }
+
+    public void updatePassword(User user, String newPassword) {
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userDAO.save(user);
     }
 }

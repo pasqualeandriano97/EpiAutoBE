@@ -35,7 +35,7 @@ public class PasswordResetToken {
     public PasswordResetToken(User user) {
 
         this.user = user;
-        this.expiryDate = calculateExpiryDate(24 * 60); // 24 ore di validità
+        this.expiryDate = calculateExpiryDate(30);
     }
 
     private Date calculateExpiryDate(int expiryTimeInMinutes) {

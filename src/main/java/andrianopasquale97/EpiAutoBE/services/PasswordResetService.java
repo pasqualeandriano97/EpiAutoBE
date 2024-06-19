@@ -46,7 +46,7 @@ public class PasswordResetService {
 
         UUID token =userService.createPasswordResetTokenForUser(user);
 
-        String resetUrl = "http://localhost:8080/api/auth/reset-password?token=" + token;
+        String resetUrl = "https://epi-auto-fe.vercel.app/auth/reset-password/" + token;
         emailSenderService.sendPasswordResetEmail(user.getEmail(), resetUrl);
 
         return new ResponseMessageDTO("Email di reimpostazione della password inviata");
